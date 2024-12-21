@@ -10,15 +10,17 @@ function LogIn() {
 	}
 
 	return (
-		<form action="POST">
-			<label htmlFor="username">Username</label>
-			<input type="text" name="username" id="username" />
-			<label htmlFor="password">Password</label>
-			<input type="password" name="password" id="password" />
-			<button type="button" onClick={handleLogIn}>
-				Log In
-			</button>
-		</form>
+		<div>
+			<form action="POST">
+				<label htmlFor="username">Username</label>
+				<input type="text" name="username" id="username" />
+				<label htmlFor="password">Password</label>
+				<input type="password" name="password" id="password" />
+				<button type="button" onClick={handleLogIn}>
+					Log In
+				</button>
+			</form>
+		</div>
 	);
 }
 
