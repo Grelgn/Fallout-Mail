@@ -1,12 +1,29 @@
-function LogIn() {
+function LogIn(props) {
 	const API_URL = import.meta.env.VITE_API_URL;
 
-	async function handleLogIn() {
+	async function handleLogIn(e) {
+		e.preventDefault();
+		const username = e.target.parentNode[0].value;
+		const password = e.target.parentNode[1].value;
 		const response = await fetch(API_URL + "/log-in", {
 			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				username: username,
+				password: password,
+			}),
 		});
 		const json = await response.json();
 		console.log(json);
+		if (json.success) {
+			console.log("Logged In");
+			props.isLoggedInSetter(true);
+			console.log(json.user);
+			props.userSetter(json.user);
+		}
 	}
 
 	return (
@@ -16,7 +33,7 @@ function LogIn() {
 				<input type="text" name="username" id="username" />
 				<label htmlFor="password">Password</label>
 				<input type="password" name="password" id="password" />
-				<button type="button" onClick={handleLogIn}>
+				<button type="submit" onClick={handleLogIn}>
 					Log In
 				</button>
 			</form>
