@@ -1,5 +1,5 @@
 function NavPage(props) {
-	function select(e) {
+	function goToPage(e) {
 		props.pageSetter(e.target.id);
 	}
 
@@ -14,16 +14,16 @@ function NavPage(props) {
 				<ul>
 					Hello {props.user.username}
 					<li>Inbox</li>
-					<li>Send a message</li>
+					<li id="SendMessage" onClick={goToPage}>Send a message</li>
 					<li>List of users</li>
 					<li onClick={logOut}>Log out</li>
 				</ul>
 			) : (
 				<ul>
-					<li id="SignUp" onClick={select}>
+					<li id="SignUp" onClick={goToPage}>
 						Sign Up
 					</li>
-					<li id="LogIn" onClick={select}>
+					<li id="LogIn" onClick={goToPage}>
 						Log In
 					</li>
 				</ul>

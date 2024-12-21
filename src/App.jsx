@@ -2,6 +2,7 @@ import SignUp from "./components/SignUp";
 import LogIn from "./components/LogIn";
 import NavPage from "./components/NavPage";
 import { useCallback, useState } from "react";
+import SendMessage from "./components/SendMessage";
 
 function App() {
 	const [page, setPage] = useState("NavPage");
@@ -27,7 +28,7 @@ function App() {
 		[setUser]
 	);
 
-	function select(e) {
+	function goToPage(e) {
 		setPage(e.target.id);
 	}
 
@@ -45,9 +46,10 @@ function App() {
 			{page == "LogIn" && (
 				<LogIn isLoggedInSetter={isLoggedInSetter} userSetter={userSetter} />
 			)}
+			{page == "SendMessage" && <SendMessage user={user} />}
 			{page != "NavPage" && (
 				<ul>
-					<li id="NavPage" onClick={select}>
+					<li id="NavPage" onClick={goToPage}>
 						Back
 					</li>
 				</ul>
