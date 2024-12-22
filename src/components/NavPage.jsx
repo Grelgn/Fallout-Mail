@@ -13,7 +13,7 @@ function NavPage(props) {
 			{props.isLoggedIn ? (
 				<ul>
 					Hello {props.user.username}
-					<li>Inbox</li>
+					<li id="Inbox" onClick={goToPage}>Inbox</li>
 					<li id="SendMessage" onClick={goToPage}>Send a message</li>
 					<li>List of users</li>
 					<li onClick={logOut}>Log out</li>

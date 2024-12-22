@@ -3,6 +3,7 @@ import LogIn from "./components/LogIn";
 import NavPage from "./components/NavPage";
 import { useCallback, useState } from "react";
 import SendMessage from "./components/SendMessage";
+import Inbox from "./components/Inbox";
 
 function App() {
 	const [page, setPage] = useState("NavPage");
@@ -12,6 +13,7 @@ function App() {
 		},
 		[setPage]
 	);
+
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const isLoggedInSetter = useCallback(
 		(val) => {
@@ -20,6 +22,7 @@ function App() {
 		},
 		[setIsLoggedIn]
 	);
+
 	const [user, setUser] = useState();
 	const userSetter = useCallback(
 		(val) => {
@@ -47,6 +50,7 @@ function App() {
 				<LogIn isLoggedInSetter={isLoggedInSetter} userSetter={userSetter} />
 			)}
 			{page == "SendMessage" && <SendMessage user={user} />}
+			{page == "Inbox" && <Inbox user={user} />}
 			{page != "NavPage" && (
 				<ul>
 					<li id="NavPage" onClick={goToPage}>
