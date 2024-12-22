@@ -4,6 +4,7 @@ import NavPage from "./components/NavPage";
 import { useCallback, useState } from "react";
 import SendMessage from "./components/SendMessage";
 import Inbox from "./components/Inbox";
+import Sent from "./components/Sent";
 
 function App() {
 	const [page, setPage] = useState("NavPage");
@@ -51,6 +52,7 @@ function App() {
 			)}
 			{page == "SendMessage" && <SendMessage user={user} />}
 			{page == "Inbox" && <Inbox user={user} />}
+			{page == "Sent" && <Sent user={user} />}
 			{page != "NavPage" && (
 				<ul>
 					<li id="NavPage" onClick={goToPage}>
