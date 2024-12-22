@@ -22,7 +22,9 @@ function NavPage(props) {
 					<li id="Sent" onClick={goToPage}>
 						Sent
 					</li>
-					<li>List of users</li>
+					<li id="UserList" onClick={goToPage}>
+						List of users
+					</li>
 					<li onClick={logOut}>Log out</li>
 				</ul>
 			) : (

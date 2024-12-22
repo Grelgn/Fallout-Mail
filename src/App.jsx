@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import SendMessage from "./components/SendMessage";
 import Inbox from "./components/Inbox";
 import Sent from "./components/Sent";
+import UserList from "./components/UserList";
 
 function App() {
 	const [page, setPage] = useState("NavPage");
@@ -32,6 +33,14 @@ function App() {
 		[setUser]
 	);
 
+	const [userList, setUserList] = useState();
+	const userListSetter = useCallback(
+		(val) => {
+			setUserList(val);
+		},
+		[setUserList]
+	);
+
 	function goToPage(e) {
 		setPage(e.target.id);
 	}
@@ -48,11 +57,16 @@ function App() {
 			)}
 			{page == "SignUp" && <SignUp />}
 			{page == "LogIn" && (
-				<LogIn isLoggedInSetter={isLoggedInSetter} userSetter={userSetter} />
+				<LogIn
+					isLoggedInSetter={isLoggedInSetter}
+					userSetter={userSetter}
+					userListSetter={userListSetter}
+				/>
 			)}
 			{page == "SendMessage" && <SendMessage user={user} />}
 			{page == "Inbox" && <Inbox user={user} />}
 			{page == "Sent" && <Sent user={user} />}
+			{page == "UserList" && <UserList userList={userList} />}
 			{page != "NavPage" && (
 				<ul>
 					<li id="NavPage" onClick={goToPage}>

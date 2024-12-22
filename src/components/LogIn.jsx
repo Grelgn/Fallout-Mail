@@ -23,6 +23,7 @@ function LogIn(props) {
 			props.isLoggedInSetter(true);
 			console.log(json.user);
 			props.userSetter(json.user);
+			props.userListSetter(json.userList);
 		}
 	}
 
