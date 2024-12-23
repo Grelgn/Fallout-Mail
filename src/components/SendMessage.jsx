@@ -33,7 +33,7 @@ function SendMessage(props) {
 				<label htmlFor="title">Subject:</label>
 				<input type="text" name="title" id="title" />
 				<label htmlFor="body">Message:</label>
-				<input type="textarea" name="body" id="body" />
+				<textarea name="body" id="body" />
 				<button type="submit" onClick={handleSendMessage}>
 					Send Message
 				</button>

@@ -25,7 +25,7 @@ function NavPage(props) {
 					<li id="UserList" onClick={goToPage}>
 						List of users
 					</li>
-					<li onClick={logOut}>Log out</li>
+					<li id="LogOut" onClick={logOut}>Log out</li>
 				</ul>
 			) : (
 				<ul>
