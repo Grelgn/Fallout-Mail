@@ -4,9 +4,9 @@ function SendMessage(props) {
 	async function handleSendMessage(e) {
 		e.preventDefault();
 		const sender = props.user.id;
-		const receiver = e.target.parentNode[0].value;
-		const title = e.target.parentNode[1].value;
-		const body = e.target.parentNode[2].value;
+		const receiver = document.querySelector("#receiver").value;
+		const title = document.querySelector("#title").value;
+		const body = document.querySelector("#body").value;
 
 		const response = await fetch(API_URL + "/message", {
 			method: "POST",
@@ -28,15 +28,25 @@ function SendMessage(props) {
 	return (
 		<div>
 			<form action="POST">
-				<label htmlFor="receiver">To:</label>
-				<input type="text" name="receiver" id="receiver" />
-				<label htmlFor="title">Subject:</label>
-				<input type="text" name="title" id="title" />
-				<label htmlFor="body">Message:</label>
-				<textarea name="body" id="body" />
-				<button type="submit" onClick={handleSendMessage}>
-					Send Message
-				</button>
+				<ul>
+					<li>
+						<label htmlFor="receiver">To:</label>
+						<input type="text" name="receiver" id="receiver" />
+					</li>
+					<li>
+						<label htmlFor="title">Subject:</label>
+						<input type="text" name="title" id="title" />
+					</li>
+					<li>
+						<label htmlFor="body">Message:</label>
+						<textarea name="body" id="body" />
+					</li>
+					<li>
+						<button type="submit" onClick={handleSendMessage}>
+							Send Message
+						</button>
+					</li>
+				</ul>
 			</form>
 		</div>
 	);

@@ -3,9 +3,9 @@ function SignUp() {
 
 	async function handleSignUp(e) {
 		e.preventDefault();
-		const username = e.target.parentNode[0].value;
-		const password = e.target.parentNode[1].value;
-		const confirm = e.target.parentNode[2].value;
+		const username = document.querySelector("#username").value;
+		const password = document.querySelector("#password").value;
+		const confirm = document.querySelector("#confirm").value;
 		const response = await fetch(API_URL + "/sign-up", {
 			method: "POST",
 			headers: {
@@ -25,15 +25,25 @@ function SignUp() {
 	return (
 		<div>
 			<form action="POST">
-				<label htmlFor="username">Username</label>
-				<input type="text" name="username" id="username" />
-				<label htmlFor="password">Password</label>
-				<input type="password" name="password" id="password" />
-				<label htmlFor="confirm">Confirm password</label>
-				<input type="password" name="confirm" id="confirm" />
-				<button type="submit" onClick={handleSignUp}>
-					Sign Up
-				</button>
+				<ul>
+					<li>
+						<label htmlFor="username">Username</label>
+						<input type="text" name="username" id="username" />
+					</li>
+					<li>
+						<label htmlFor="password">Password</label>
+						<input type="password" name="password" id="password" />
+					</li>
+					<li>
+						<label htmlFor="confirm">Confirm password</label>
+						<input type="password" name="confirm" id="confirm" />
+					</li>
+					<li>
+						<button type="submit" onClick={handleSignUp}>
+							Sign Up
+						</button>
+					</li>
+				</ul>
 			</form>
 		</div>
 	);

@@ -52,6 +52,10 @@ function App() {
 		selectedItem.current = 0;
 		items.current = document.querySelectorAll("li");
 		items.current[selectedItem.current].classList.add("selected");
+		if (items.current[selectedItem.current].children.length > 0) {
+			console.log("Has Children");
+			items.current[selectedItem.current].children[0].focus();
+		}
 		console.log(items.current.length);
 	});
 
@@ -63,10 +67,12 @@ function App() {
 				items.current[selectedItem.current].classList.remove("selected");
 				selectedItem.current -= 1;
 				items.current[selectedItem.current].classList.add("selected");
+				if (items.current[selectedItem.current].children.length > 0) {
+					console.log("Has Children");
+					items.current[selectedItem.current].children[0].focus();
+				}
 				console.log(selectedItem);
 			}
-		});
-		window.addEventListener("keydown", (e) => {
 			if (
 				e.key === "ArrowDown" &&
 				selectedItem.current < items.current.length - 1
@@ -75,14 +81,29 @@ function App() {
 				items.current[selectedItem.current].classList.remove("selected");
 				selectedItem.current += 1;
 				items.current[selectedItem.current].classList.add("selected");
+				if (items.current[selectedItem.current].children.length > 0) {
+					console.log("Has Children");
+					items.current[selectedItem.current].children[0].focus();
+				}
 				console.log(selectedItem);
 			}
-		});
-		window.addEventListener("keydown", (e) => {
 			if (e.key === "Enter") {
+				e.preventDefault();
 				console.log("Enter");
+				if (items.current[selectedItem.current].children.length > 0) {
+					console.log("Has Children");
+					if (
+						items.current[selectedItem.current].children[0].nodeName == "BUTTON"
+					) {
+						console.log("BUTTON");
+						items.current[selectedItem.current].children[0].click();
+					}
+				}
 				items.current[selectedItem.current].click();
-				console.log(items.current[selectedItem.current]);
+				console.log(items.current);
+			}
+			if (e.key === "Tab") {
+				e.preventDefault();
 			}
 		});
 	}, []);

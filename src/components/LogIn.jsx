@@ -3,8 +3,8 @@ function LogIn(props) {
 
 	async function handleLogIn(e) {
 		e.preventDefault();
-		const username = e.target.parentNode[0].value;
-		const password = e.target.parentNode[1].value;
+		const username = document.querySelector("#username").value;
+		const password = document.querySelector("#password").value;
 		const response = await fetch(API_URL + "/log-in", {
 			method: "POST",
 			headers: {
@@ -30,13 +30,21 @@ function LogIn(props) {
 	return (
 		<div>
 			<form action="POST">
-				<label htmlFor="username">Username</label>
-				<input type="text" name="username" id="username" />
-				<label htmlFor="password">Password</label>
-				<input type="password" name="password" id="password" />
-				<button type="submit" onClick={handleLogIn}>
-					Log In
-				</button>
+				<ul>
+					<li>
+						<label htmlFor="username">Username</label>
+						<input type="text" name="username" id="username" />
+					</li>
+					<li>
+						<label htmlFor="password">Password</label>
+						<input type="password" name="password" id="password" />
+					</li>
+					<li>
+						<button type="submit" onClick={handleLogIn}>
+							Log In
+						</button>
+					</li>
+				</ul>
 			</form>
 		</div>
 	);
