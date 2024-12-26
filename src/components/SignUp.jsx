@@ -40,7 +40,7 @@ function SignUp() {
 					</li>
 					<li>
 						<button type="submit" onClick={handleSignUp}>
-							Sign Up
+							[Sign Up]
 						</button>
 					</li>
 				</ul>

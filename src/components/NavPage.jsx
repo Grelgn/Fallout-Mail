@@ -12,28 +12,27 @@ function NavPage(props) {
 		<div>
 			{props.isLoggedIn ? (
 				<ul>
-					Hello {props.user.username}
 					<li id="SendMessage" onClick={goToPage}>
-						Send a message
+						[Send a message]
 					</li>
 					<li id="Inbox" onClick={goToPage}>
-						Inbox
+						[Inbox]
 					</li>
 					<li id="Sent" onClick={goToPage}>
-						Sent
+						[Sent]
 					</li>
 					<li id="UserList" onClick={goToPage}>
-						List of users
+						[List of users]
 					</li>
-					<li id="LogOut" onClick={logOut}>Log out</li>
+					<li id="LogOut" onClick={logOut}>[Log out]</li>
 				</ul>
 			) : (
 				<ul>
 					<li id="SignUp" onClick={goToPage}>
-						Sign Up
+						[Sign Up]
 					</li>
 					<li id="LogIn" onClick={goToPage}>
-						Log In
+						[Log In]
 					</li>
 				</ul>
 			)}

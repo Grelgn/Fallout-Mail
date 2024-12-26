@@ -41,7 +41,7 @@ function LogIn(props) {
 					</li>
 					<li>
 						<button type="submit" onClick={handleLogIn}>
-							Log In
+							[Log In]
 						</button>
 					</li>
 				</ul>

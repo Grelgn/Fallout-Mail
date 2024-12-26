@@ -43,7 +43,7 @@ function SendMessage(props) {
 					</li>
 					<li>
 						<button type="submit" onClick={handleSendMessage}>
-							Send Message
+							[Send Message]
 						</button>
 					</li>
 				</ul>

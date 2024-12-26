@@ -110,33 +110,40 @@ function App() {
 
 	return (
 		<>
-			{page == "NavPage" && (
-				<NavPage
-					pageSetter={pageSetter}
-					isLoggedIn={isLoggedIn}
-					user={user}
-					isLoggedInSetter={isLoggedInSetter}
-				/>
-			)}
-			{page == "SignUp" && <SignUp />}
-			{page == "LogIn" && (
-				<LogIn
-					isLoggedInSetter={isLoggedInSetter}
-					userSetter={userSetter}
-					userListSetter={userListSetter}
-				/>
-			)}
-			{page == "SendMessage" && <SendMessage user={user} />}
-			{page == "Inbox" && <Inbox user={user} />}
-			{page == "Sent" && <Sent user={user} />}
-			{page == "UserList" && <UserList userList={userList} />}
-			{page != "NavPage" && (
-				<ul>
-					<li id="NavPage" onClick={goToPage}>
-						Back
-					</li>
-				</ul>
-			)}
+			<div className="scanlines">
+				<div className="content">
+					<div>Welcome to ROBCO Industries (TM) Termlink</div>
+					{isLoggedIn && <div>Welcome, {user.username}!</div>}
+					<br />
+					{page == "NavPage" && (
+						<NavPage
+							pageSetter={pageSetter}
+							isLoggedIn={isLoggedIn}
+							user={user}
+							isLoggedInSetter={isLoggedInSetter}
+						/>
+					)}
+					{page == "SignUp" && <SignUp />}
+					{page == "LogIn" && (
+						<LogIn
+							isLoggedInSetter={isLoggedInSetter}
+							userSetter={userSetter}
+							userListSetter={userListSetter}
+						/>
+					)}
+					{page == "SendMessage" && <SendMessage user={user} />}
+					{page == "Inbox" && <Inbox user={user} />}
+					{page == "Sent" && <Sent user={user} />}
+					{page == "UserList" && <UserList userList={userList} />}
+					{page != "NavPage" && (
+						<ul>
+							<li id="NavPage" onClick={goToPage}>
+								[Go back]
+							</li>
+						</ul>
+					)}
+				</div>
+			</div>
 		</>
 	);
 }
