@@ -98,3 +98,7 @@ textarea {
 		background-position: 0 50%;
 	}
 }
+
+.content {
+	padding: 50px;
+}

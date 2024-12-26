@@ -47,12 +47,12 @@ function App() {
 
 	let items = useRef();
 	let selectedItem = useRef(0);
+	let lines = useRef([]);
 
 	// Every refresh
 	useEffect(() => {
 		selectedItem.current = 0;
 		items.current = document.querySelectorAll("li");
-		items.current[selectedItem.current].classList.add("selected");
 		if (items.current[selectedItem.current].children.length > 0) {
 			items.current[selectedItem.current].children[0].focus();
 		}
@@ -61,36 +61,58 @@ function App() {
 		console.log(content);
 		console.log(content.childNodes);
 
+		lines.current = [];
+		lineTime.current = 0;
 		getLines(content.childNodes);
+		console.log(lines.current);
+		printLines(lines.current);
 	});
 
 	function getLines(n) {
 		n.forEach((node) => {
-			if (node.nodeName == "BR") {
+			if (node.nodeName == "BR" || node.nodeName == "INPUT") {
 				return;
 			} else if (node.nodeName == "UL") {
 				node.childNodes.forEach((li) => {
-					console.log(li.textContent);
+					if (li.childNodes.length > 0) {
+						getLines(li.childNodes);
+					} else {
+						lines.current.push(li);
+					}
 				});
 			} else if (node.childNodes.length > 0) {
 				getLines(node.childNodes);
 			} else {
-				console.log(node.textContent);
-				printLine(node);
+				lines.current.push(node);
 			}
 		});
 	}
 
-	function printLine(node) {
-		const content = document.querySelector(".content");
-		const line = document.createElement("div");
-		content.appendChild(line);
+	let charTime = useRef(25);
+	let lineTime = useRef(0);
 
-		for (let i = 0; i < node.textContent.length; i++) {
+	function printLines(l) {
+		l.forEach((line) => {
+			console.log(line);
+
+			const lineText = line.textContent;
+			line.textContent = "";
+
 			setTimeout(() => {
-				line.textContent += node.textContent[i];
-			}, 50 * i);
-		}
+				for (let i = 0; i < lineText.length; i++) {
+					setTimeout(() => {
+						line.textContent += lineText[i];
+					}, charTime.current * i);
+				}
+			}, lineTime.current);
+
+			lineTime.current += charTime.current * lineText.length;
+		});
+		console.log(lineTime.current);
+
+		setTimeout(() => {
+			items.current[selectedItem.current].classList.add("selected");
+		}, lineTime.current);
 	}
 
 	// Only once
@@ -130,13 +152,6 @@ function App() {
 				e.preventDefault();
 			}
 		});
-
-		// Overlay
-		// const overlay = document.querySelector(".overlay");
-		// const lines = document.body.clientHeight / 50;
-		// for (let i = 0; i < lines; ++i) {
-		// 	overlay.appendChild(document.createElement("div"));
-		// }
 	}, []);
 
 	return (
