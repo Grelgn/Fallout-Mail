@@ -48,6 +48,7 @@ function App() {
 	let items = useRef();
 	let selectedItem = useRef(0);
 
+	// Every refresh
 	useEffect(() => {
 		selectedItem.current = 0;
 		items.current = document.querySelectorAll("li");
@@ -57,8 +58,18 @@ function App() {
 			items.current[selectedItem.current].children[0].focus();
 		}
 		console.log(items.current.length);
+
+		const overlay = document.querySelector(".overlay");
+		const lines = document.body.clientHeight / 50;
+		console.log(lines)
+		let divs = [];
+		for (let i = 0; i < lines; ++i) {
+			divs[i] = document.createElement("div");
+		}
+		overlay.replaceChildren(...divs);
 	});
 
+	// Only once
 	useEffect(() => {
 		console.log("event added");
 		window.addEventListener("keydown", (e) => {
@@ -106,11 +117,19 @@ function App() {
 				e.preventDefault();
 			}
 		});
+
+		// Overlay
+		// const overlay = document.querySelector(".overlay");
+		// const lines = document.body.clientHeight / 50;
+		// for (let i = 0; i < lines; ++i) {
+		// 	overlay.appendChild(document.createElement("div"));
+		// }
 	}, []);
 
 	return (
 		<>
 			<div className="scanlines">
+				<div className="overlay"></div>
 				<div className="content">
 					<div>Welcome to ROBCO Industries (TM) Termlink</div>
 					{isLoggedIn && <div>Welcome, {user.username}!</div>}
