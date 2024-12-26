@@ -1,3 +1,43 @@
+@font-face {
+	font-family: Terminal;
+	src: url(/Terminal_Font.ttf);
+}
+
+:root {
+	--terminal-green: hsl(120, 100%, 49%);
+}
+
+body {
+	background-color: black;
+	font-size: 40px;
+}
+
+body,
+button,
+input {
+	font-family: Terminal;
+	color: var(--terminal-green);
+}
+
+input,
+button,
+ul,
+textarea {
+	all: unset;
+}
+
+/* Bug that can be used to scale the caret */
+/* input {
+	font-size: 4px;
+	transform: scale(10);
+	transform-origin: 0 58%;
+} */
+
 .selected {
-	border: 1px solid black;
+	background-color: var(--terminal-green);
+	color: black;
+}
+
+textarea {
+height:auto;
 }
