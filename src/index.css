@@ -3,8 +3,6 @@
 	src: url(/Terminal_Font.ttf);
 }
 
-$line-load-time: 0.25s;
-
 :root {
 	--terminal-green: hsl(120, 100%, 49%);
 }
@@ -100,36 +98,3 @@ textarea {
 		background-position: 0 50%;
 	}
 }
-
-.overlay {
-	pointer-events: none;
-  position: absolute;
-  z-index: 100;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-	> * {
-    width: 100%;
-    transform-origin: 100% 100%;
-    transform: scaleX(1);
-    height: 50px;
-		background-color: black;
-    animation: loadLine $line-load-time linear forwards;
-  } 
-	@for $i from 1 to 100 {
-    :nth-child(#{$i}) {
-      animation-delay: $i * $line-load-time;
-    }
-  }
-}
-
-@keyframes loadLine {
-  from {
-    transform: scaleX(1);
-  }
-  to {
-    transform: scaleX(0);
-  }
-}
-

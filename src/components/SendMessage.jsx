@@ -26,29 +26,27 @@ function SendMessage(props) {
 	}
 
 	return (
-		<div>
-			<form action="POST">
-				<ul>
-					<li>
-						<label htmlFor="receiver">To:</label>
-						<input type="text" name="receiver" id="receiver" />
-					</li>
-					<li>
-						<label htmlFor="title">Subject:</label>
-						<input type="text" name="title" id="title" />
-					</li>
-					<li>
-						<label htmlFor="body">Message:</label>
-						<textarea name="body" id="body" />
-					</li>
-					<li>
-						<button type="submit" onClick={handleSendMessage}>
-							[Send Message]
-						</button>
-					</li>
-				</ul>
-			</form>
-		</div>
+		<form action="POST">
+			<ul>
+				<li>
+					<label htmlFor="receiver">To:</label>
+					<input type="text" name="receiver" id="receiver" />
+				</li>
+				<li>
+					<label htmlFor="title">Subject:</label>
+					<input type="text" name="title" id="title" />
+				</li>
+				<li>
+					<label htmlFor="body">Message:</label>
+					<textarea name="body" id="body" />
+				</li>
+				<li>
+					<button type="submit" onClick={handleSendMessage}>
+						[Send Message]
+					</button>
+				</li>
+			</ul>
+		</form>
 	);
 }
 

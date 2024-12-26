@@ -9,9 +9,9 @@ function NavPage(props) {
 	}
 
 	return (
-		<div>
+		<ul>
 			{props.isLoggedIn ? (
-				<ul>
+				<>
 					<li id="SendMessage" onClick={goToPage}>
 						[Send a message]
 					</li>
@@ -24,19 +24,21 @@ function NavPage(props) {
 					<li id="UserList" onClick={goToPage}>
 						[List of users]
 					</li>
-					<li id="LogOut" onClick={logOut}>[Log out]</li>
-				</ul>
+					<li id="LogOut" onClick={logOut}>
+						[Log out]
+					</li>
+				</>
 			) : (
-				<ul>
+				<>
 					<li id="SignUp" onClick={goToPage}>
 						[Sign Up]
 					</li>
 					<li id="LogIn" onClick={goToPage}>
 						[Log In]
 					</li>
-				</ul>
+				</>
 			)}
-		</div>
+		</ul>
 	);
 }
 

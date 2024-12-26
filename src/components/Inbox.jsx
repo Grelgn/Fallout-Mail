@@ -10,11 +10,7 @@ function Inbox(props) {
 	});
 	console.log(messages);
 
-	return (
-		<div>
-			<ul>{messages}</ul>
-		</div>
-	);
+	return <ul>{messages}</ul>;
 }
 
 export default Inbox;

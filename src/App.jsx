@@ -54,64 +54,77 @@ function App() {
 		items.current = document.querySelectorAll("li");
 		items.current[selectedItem.current].classList.add("selected");
 		if (items.current[selectedItem.current].children.length > 0) {
-			console.log("Has Children");
 			items.current[selectedItem.current].children[0].focus();
 		}
-		console.log(items.current.length);
 
-		const overlay = document.querySelector(".overlay");
-		const lines = document.body.clientHeight / 50;
-		console.log(lines)
-		let divs = [];
-		for (let i = 0; i < lines; ++i) {
-			divs[i] = document.createElement("div");
-		}
-		overlay.replaceChildren(...divs);
+		const content = document.querySelector(".content");
+		console.log(content);
+		console.log(content.childNodes);
+
+		getLines(content.childNodes);
 	});
+
+	function getLines(n) {
+		n.forEach((node) => {
+			if (node.nodeName == "BR") {
+				return;
+			} else if (node.nodeName == "UL") {
+				node.childNodes.forEach((li) => {
+					console.log(li.textContent);
+				});
+			} else if (node.childNodes.length > 0) {
+				getLines(node.childNodes);
+			} else {
+				console.log(node.textContent);
+				printLine(node);
+			}
+		});
+	}
+
+	function printLine(node) {
+		const content = document.querySelector(".content");
+		const line = document.createElement("div");
+		content.appendChild(line);
+
+		for (let i = 0; i < node.textContent.length; i++) {
+			setTimeout(() => {
+				line.textContent += node.textContent[i];
+			}, 50 * i);
+		}
+	}
 
 	// Only once
 	useEffect(() => {
-		console.log("event added");
 		window.addEventListener("keydown", (e) => {
 			if (e.key === "ArrowUp" && selectedItem.current > 0) {
-				console.log("Up");
 				items.current[selectedItem.current].classList.remove("selected");
 				selectedItem.current -= 1;
 				items.current[selectedItem.current].classList.add("selected");
 				if (items.current[selectedItem.current].children.length > 0) {
-					console.log("Has Children");
 					items.current[selectedItem.current].children[0].focus();
 				}
-				console.log(selectedItem);
 			}
 			if (
 				e.key === "ArrowDown" &&
 				selectedItem.current < items.current.length - 1
 			) {
-				console.log("Down");
 				items.current[selectedItem.current].classList.remove("selected");
 				selectedItem.current += 1;
 				items.current[selectedItem.current].classList.add("selected");
 				if (items.current[selectedItem.current].children.length > 0) {
-					console.log("Has Children");
 					items.current[selectedItem.current].children[0].focus();
 				}
-				console.log(selectedItem);
 			}
 			if (e.key === "Enter") {
 				e.preventDefault();
-				console.log("Enter");
 				if (items.current[selectedItem.current].children.length > 0) {
-					console.log("Has Children");
 					if (
 						items.current[selectedItem.current].children[0].nodeName == "BUTTON"
 					) {
-						console.log("BUTTON");
 						items.current[selectedItem.current].children[0].click();
 					}
 				}
 				items.current[selectedItem.current].click();
-				console.log(items.current);
 			}
 			if (e.key === "Tab") {
 				e.preventDefault();

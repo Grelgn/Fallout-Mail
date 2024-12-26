@@ -9,11 +9,7 @@ function UserList(props) {
 	});
 	console.log(users);
 
-	return (
-		<div>
-			<ul>{users}</ul>
-		</div>
-	);
+	return <ul>{users}</ul>;
 }
 
 export default UserList;
