@@ -7,6 +7,18 @@ import Inbox from "./components/Inbox";
 import Sent from "./components/Sent";
 import UserList from "./components/UserList";
 
+const charEnter = Object.keys(
+	import.meta.glob("/src/assets/sounds/CharEnter*.wav")
+);
+const charSingle = Object.keys(
+	import.meta.glob("/src/assets/sounds/CharSingle*.wav")
+);
+console.log(charSingle);
+import charScroll from "/src/assets/sounds/CharScroll_LP.wav";
+const hardDrive = Object.keys(
+	import.meta.glob("/src/assets/sounds/HardDrive*.wav")
+);
+
 function App() {
 	const [page, setPage] = useState("NavPage");
 	const pageSetter = useCallback(
@@ -53,9 +65,6 @@ function App() {
 	useEffect(() => {
 		selectedItem.current = 0;
 		items.current = document.querySelectorAll("li");
-		if (items.current[selectedItem.current].children.length > 0) {
-			items.current[selectedItem.current].children[0].focus();
-		}
 
 		const content = document.querySelector(".content");
 		console.log(content);
@@ -66,6 +75,11 @@ function App() {
 		getLines(content.childNodes);
 		console.log(lines.current);
 		printLines(lines.current);
+
+		const audio = new Audio(
+			hardDrive[Math.floor(Math.random() * hardDrive.length)]
+		);
+		audio.play();
 	});
 
 	function getLines(n) {
@@ -88,7 +102,7 @@ function App() {
 		});
 	}
 
-	let charTime = useRef(25);
+	let charTime = useRef(15);
 	let lineTime = useRef(0);
 
 	function printLines(l) {
@@ -102,6 +116,8 @@ function App() {
 				for (let i = 0; i < lineText.length; i++) {
 					setTimeout(() => {
 						line.textContent += lineText[i];
+						// const audio = new Audio(charScroll);
+						// audio.play()
 					}, charTime.current * i);
 				}
 			}, lineTime.current);
@@ -110,8 +126,22 @@ function App() {
 		});
 		console.log(lineTime.current);
 
+		const audio = new Audio(charScroll);
+		const interval = setInterval(() => {
+			audio.play();
+		}, 0);
+
+		// When printing is done
 		setTimeout(() => {
 			items.current[selectedItem.current].classList.add("selected");
+			clearInterval(interval);
+			const audio = new Audio(
+				charSingle[Math.floor(Math.random() * charSingle.length)]
+			);
+			audio.play();
+			if (items.current[selectedItem.current].children.length > 0) {
+				items.current[selectedItem.current].children[0].focus();
+			}
 		}, lineTime.current);
 	}
 
@@ -125,6 +155,10 @@ function App() {
 				if (items.current[selectedItem.current].children.length > 0) {
 					items.current[selectedItem.current].children[0].focus();
 				}
+				const audio = new Audio(
+					charSingle[Math.floor(Math.random() * charSingle.length)]
+				);
+				audio.play();
 			}
 			if (
 				e.key === "ArrowDown" &&
@@ -136,6 +170,10 @@ function App() {
 				if (items.current[selectedItem.current].children.length > 0) {
 					items.current[selectedItem.current].children[0].focus();
 				}
+				const audio = new Audio(
+					charSingle[Math.floor(Math.random() * charSingle.length)]
+				);
+				audio.play();
 			}
 			if (e.key === "Enter") {
 				e.preventDefault();
@@ -147,6 +185,10 @@ function App() {
 					}
 				}
 				items.current[selectedItem.current].click();
+				const audio = new Audio(
+					charEnter[Math.floor(Math.random() * charEnter.length)]
+				);
+				audio.play();
 			}
 			if (e.key === "Tab") {
 				e.preventDefault();
