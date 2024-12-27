@@ -13,7 +13,6 @@ const charEnter = Object.keys(
 const charSingle = Object.keys(
 	import.meta.glob("/src/assets/sounds/CharSingle*.wav")
 );
-console.log(charSingle);
 import charScroll from "/src/assets/sounds/CharScroll_LP.wav";
 const hardDrive = Object.keys(
 	import.meta.glob("/src/assets/sounds/HardDrive*.wav")
@@ -67,13 +66,10 @@ function App() {
 		items.current = document.querySelectorAll("li");
 
 		const content = document.querySelector(".content");
-		console.log(content);
-		console.log(content.childNodes);
 
 		lines.current = [];
 		lineTime.current = 0;
 		getLines(content.childNodes);
-		console.log(lines.current);
 		printLines(lines.current);
 
 		const audio = new Audio(
@@ -102,17 +98,30 @@ function App() {
 		});
 	}
 
-	let charTime = useRef(15);
+	let charTime = useRef(20);
 	let lineTime = useRef(0);
+	let firstLoad = useRef(true);
+	let firstLogin = useRef(true);
+
+	useEffect(() => {
+		isLoggedIn ? (firstLogin.current = false) : (firstLogin.current = true);
+	}, [isLoggedIn]);
 
 	function printLines(l) {
-		l.forEach((line) => {
-			console.log(line);
+		// Excluding lines
+		if (!firstLoad.current) {
+			l.splice(0, 1);
+		}
+		if (isLoggedIn && !firstLogin.current) {
+			l.splice(0, 3);
+		}
 
+		l.forEach((line) => {
 			const lineText = line.textContent;
 			line.textContent = "";
 
 			setTimeout(() => {
+				// Each character
 				for (let i = 0; i < lineText.length; i++) {
 					setTimeout(() => {
 						line.textContent += lineText[i];
@@ -124,7 +133,6 @@ function App() {
 
 			lineTime.current += charTime.current * lineText.length;
 		});
-		console.log(lineTime.current);
 
 		const audio = new Audio(charScroll);
 		const interval = setInterval(() => {
@@ -143,6 +151,7 @@ function App() {
 				items.current[selectedItem.current].children[0].focus();
 			}
 		}, lineTime.current);
+		firstLoad.current = false;
 	}
 
 	// Only once
