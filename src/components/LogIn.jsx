@@ -31,11 +31,11 @@ function LogIn(props) {
 		<form action="POST">
 			<ul>
 				<li>
-					<label htmlFor="username">Username</label>
+					<label htmlFor="username">Username:</label>
 					<input type="text" name="username" id="username" />
 				</li>
 				<li>
-					<label htmlFor="password">Password</label>
+					<label htmlFor="password">Password:</label>
 					<input type="password" name="password" id="password" />
 				</li>
 				<li>

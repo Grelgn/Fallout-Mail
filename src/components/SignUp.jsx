@@ -26,15 +26,15 @@ function SignUp() {
 		<form action="POST">
 			<ul>
 				<li>
-					<label htmlFor="username">Username</label>
+					<label htmlFor="username">Username:</label>
 					<input type="text" name="username" id="username" />
 				</li>
 				<li>
-					<label htmlFor="password">Password</label>
+					<label htmlFor="password">Password:</label>
 					<input type="password" name="password" id="password" />
 				</li>
 				<li>
-					<label htmlFor="confirm">Confirm password</label>
+					<label htmlFor="confirm">Confirm password:</label>
 					<input type="password" name="confirm" id="confirm" />
 				</li>
 				<li>

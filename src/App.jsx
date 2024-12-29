@@ -98,7 +98,7 @@ function App() {
 		});
 	}
 
-	let charTime = useRef(20);
+	let charTime = useRef(10);
 	let lineTime = useRef(0);
 	let firstLoad = useRef(true);
 	let firstLogin = useRef(true);
@@ -185,7 +185,7 @@ function App() {
 				audio.play();
 			}
 			if (e.key === "Enter") {
-				e.preventDefault();
+				// e.preventDefault();
 				if (items.current[selectedItem.current].children.length > 0) {
 					if (
 						items.current[selectedItem.current].children[0].nodeName == "BUTTON"
@@ -203,16 +203,28 @@ function App() {
 				e.preventDefault();
 			}
 		});
+		window.addEventListener("keyup", (e) => {
+			if (
+				document.activeElement.nodeName == "INPUT" ||
+				document.activeElement.nodeName == "TEXTAREA"
+			) {
+				const audio = new Audio(
+					charSingle[Math.floor(Math.random() * charSingle.length)]
+				);
+				audio.play();
+			}
+		});
 	}, []);
 
 	return (
 		<>
 			<div className="scanlines">
-				<div className="overlay"></div>
 				<div className="content">
-					<div>Welcome to ROBCO Industries (TM) Termlink</div>
-					{isLoggedIn && <div>Welcome, {user.username}!</div>}
-					<br />
+					<div>
+						<div>Welcome to ROBCO Industries (TM) Termlink</div>
+						{isLoggedIn && <div>Welcome, {user.username}!</div>}
+						<br />
+					</div>
 					{page == "NavPage" && (
 						<NavPage
 							pageSetter={pageSetter}
@@ -240,6 +252,9 @@ function App() {
 							</li>
 						</ul>
 					)}
+					<div className="end">
+						> <span className="cursor">▇</span>{" "}
+					</div>
 				</div>
 			</div>
 		</>

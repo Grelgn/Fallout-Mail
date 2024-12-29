@@ -47,8 +47,21 @@ li {
 	color: black;
 }
 
+li:has(> textarea) {
+	display: grid;
+	grid-auto-flow: column;
+	justify-content: start;
+	grid-template-columns: auto 1fr;
+	border: red;
+}
+
+input,
 textarea {
-	height: auto;
+	margin-left: 1rem;
+}
+
+textarea {
+	/* height: 45svh; */
 }
 
 .scanlines {
@@ -56,6 +69,7 @@ textarea {
 	position: relative;
 	width: 100svw;
 	height: 100svh;
+	display: grid;
 }
 .scanlines:before,
 .scanlines:after {
@@ -101,4 +115,26 @@ textarea {
 
 .content {
 	padding: 50px;
+	display: flex;
+	flex-direction: column;
+}
+
+.end {
+	flex: 1;
+	align-content: end;
+	/* font-size: 32px; */
+	/* font-weight: bold; */
+}
+
+.cursor {
+	animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+	0% {
+		opacity: 0;
+	}
+	50% {
+		opacity: 1;
+	}
 }

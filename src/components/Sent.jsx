@@ -10,7 +10,9 @@ function Sent(props) {
 	});
 	console.log(messages);
 
-	return <ul>{messages}</ul>;
+	if (messages.length > 0) {
+		return <ul>{messages}</ul>;
+	}
 }
 
 export default Sent;
