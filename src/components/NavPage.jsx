@@ -5,7 +5,6 @@ function NavPage(props) {
 
 	function logOut() {
 		props.isLoggedInSetter(false);
-		console.log("Logged Out");
 	}
 
 	return (

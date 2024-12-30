@@ -6,6 +6,7 @@ import SendMessage from "./components/SendMessage";
 import Inbox from "./components/Inbox";
 import Sent from "./components/Sent";
 import UserList from "./components/UserList";
+import Message from "./components/Message";
 
 const charEnter = Object.keys(
 	import.meta.glob("/src/assets/sounds/CharEnter*.wav")
@@ -216,6 +217,8 @@ function App() {
 		});
 	}, []);
 
+	let messageIndex = useRef(0);
+
 	return (
 		<>
 			<div className="scanlines">
@@ -242,12 +245,28 @@ function App() {
 						/>
 					)}
 					{page == "SendMessage" && <SendMessage user={user} />}
-					{page == "Inbox" && <Inbox user={user} />}
+					{page == "Inbox" && (
+						<Inbox
+							user={user}
+							pageSetter={pageSetter}
+							messageIndex={messageIndex}
+						/>
+					)}
+					{page == "Message" && (
+						<Message message={user.messagesReceived[messageIndex.current]} />
+					)}
 					{page == "Sent" && <Sent user={user} />}
 					{page == "UserList" && <UserList userList={userList} />}
-					{page != "NavPage" && (
+					{(page != "NavPage" && page != "Message") && (
 						<ul>
 							<li id="NavPage" onClick={goToPage}>
+								[Go back]
+							</li>
+						</ul>
+					)}
+					{page == "Message" && (
+						<ul>
+							<li id="Inbox" onClick={goToPage}>
 								[Go back]
 							</li>
 						</ul>

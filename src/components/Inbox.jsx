@@ -1,14 +1,17 @@
 function Inbox(props) {
+	function goToMessage(e, i) {
+		props.messageIndex.current = i;
+		props.pageSetter(e.target.id);
+	}
+
 	const messages = [];
 	props.user.messagesReceived.forEach((message, index) => {
 		messages.push(
-			<li key={index}>
-				Sender: {message.sender.username} Subject: {message.title} Message:
-				{message.body}
+			<li id="Message" key={index} onClick={(e) => goToMessage(e, index)}>
+				Sender: {message.sender.username} Subject: {message.title}
 			</li>
 		);
 	});
-	console.log(messages);
 
 	return <ul>{messages}</ul>;
 }
