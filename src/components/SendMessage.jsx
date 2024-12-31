@@ -36,7 +36,7 @@ function SendMessage(props) {
 					<label htmlFor="title">Subject:</label>
 					<input type="text" name="title" id="title" />
 				</li>
-				<li>
+				<li className="message">
 					<label htmlFor="body">Message:</label>
 					<textarea name="body" id="body" />
 				</li>

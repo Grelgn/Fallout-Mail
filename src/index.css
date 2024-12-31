@@ -48,20 +48,39 @@ li {
 }
 
 li:has(> textarea) {
-	display: grid;
+	/* display: grid;
 	grid-auto-flow: column;
 	justify-content: start;
-	grid-template-columns: auto 1fr;
-	border: red;
+	grid-template-columns: auto 1fr; */
+	display: flex;
+}
+
+li:has(> input) {
+	display: flex;
 }
 
 input,
 textarea {
 	margin-left: 1rem;
+	width: max-content;
+	flex: 1;
+}
+form {
+	flex: 10;
+	display: flex;
 }
 
-textarea {
+ul {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+
+
+.message {
 	/* height: 45svh; */
+	flex: 1;
 }
 
 .scanlines {
@@ -122,12 +141,10 @@ textarea {
 .end {
 	flex: 1;
 	align-content: end;
-	/* font-size: 32px; */
-	/* font-weight: bold; */
 }
 
 .cursor {
-	animation: blink 1s steps(1) infinite;
+	animation: blink 0.4s steps(1) infinite;
 }
 
 @keyframes blink {

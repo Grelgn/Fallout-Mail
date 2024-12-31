@@ -1,14 +1,18 @@
 function Sent(props) {
+	function goToMessage(e, i) {
+		props.messageIndex.current = i;
+		props.messageType.current = "Sent";
+		props.pageSetter(e.target.id);
+	}
+
 	const messages = [];
 	props.user.messagesSent.forEach((message, index) => {
 		messages.push(
-			<li key={index}>
-				To: {message.receiver.username} Subject: {message.title} Message:
-				{message.body}
+			<li id="Message" key={index} onClick={(e) => goToMessage(e, index)}>
+				[{message.title}]
 			</li>
 		);
 	});
-	console.log(messages);
 
 	if (messages.length > 0) {
 		return <ul>{messages}</ul>;

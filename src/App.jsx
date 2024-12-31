@@ -81,7 +81,11 @@ function App() {
 
 	function getLines(n) {
 		n.forEach((node) => {
-			if (node.nodeName == "BR" || node.nodeName == "INPUT") {
+			if (
+				node.nodeName == "BR" ||
+				node.nodeName == "INPUT" ||
+				node.className == "arrow"
+			) {
 				return;
 			} else if (node.nodeName == "UL") {
 				node.childNodes.forEach((li) => {
@@ -108,7 +112,10 @@ function App() {
 		isLoggedIn ? (firstLogin.current = false) : (firstLogin.current = true);
 	}, [isLoggedIn]);
 
+	let isPrintingLines = useRef(true);
+
 	function printLines(l) {
+		isPrintingLines.current = true;
 		// Excluding lines
 		if (!firstLoad.current) {
 			l.splice(0, 1);
@@ -151,6 +158,7 @@ function App() {
 			if (items.current[selectedItem.current].children.length > 0) {
 				items.current[selectedItem.current].children[0].focus();
 			}
+			isPrintingLines.current = false;
 		}, lineTime.current);
 		firstLoad.current = false;
 	}
@@ -158,7 +166,11 @@ function App() {
 	// Only once
 	useEffect(() => {
 		window.addEventListener("keydown", (e) => {
-			if (e.key === "ArrowUp" && selectedItem.current > 0) {
+			if (
+				e.key === "ArrowUp" &&
+				!isPrintingLines.current &&
+				selectedItem.current > 0
+			) {
 				items.current[selectedItem.current].classList.remove("selected");
 				selectedItem.current -= 1;
 				items.current[selectedItem.current].classList.add("selected");
@@ -172,6 +184,7 @@ function App() {
 			}
 			if (
 				e.key === "ArrowDown" &&
+				!isPrintingLines.current &&
 				selectedItem.current < items.current.length - 1
 			) {
 				items.current[selectedItem.current].classList.remove("selected");
@@ -185,32 +198,39 @@ function App() {
 				);
 				audio.play();
 			}
-			if (e.key === "Enter") {
-				// e.preventDefault();
-				if (items.current[selectedItem.current].children.length > 0) {
-					if (
-						items.current[selectedItem.current].children[0].nodeName == "BUTTON"
-					) {
-						items.current[selectedItem.current].children[0].click();
-					}
-				}
-				items.current[selectedItem.current].click();
+			if (e.key === "Enter" && !isPrintingLines.current) {
 				const audio = new Audio(
 					charEnter[Math.floor(Math.random() * charEnter.length)]
 				);
 				audio.play();
+				if (e.target.nodeName == "INPUT") {
+					e.preventDefault();
+					return;
+				}
+				items.current[selectedItem.current].click();
 			}
 			if (e.key === "Tab") {
 				e.preventDefault();
 			}
 		});
+
 		window.addEventListener("keyup", (e) => {
 			if (
-				document.activeElement.nodeName == "INPUT" ||
-				document.activeElement.nodeName == "TEXTAREA"
+				(document.activeElement.nodeName == "INPUT" ||
+					document.activeElement.nodeName == "TEXTAREA") &&
+				e.key != "Enter" &&
+				e.key != "ArrowDown" &&
+				e.key != "ArrowUp" &&
+				e.key != " "
 			) {
 				const audio = new Audio(
 					charSingle[Math.floor(Math.random() * charSingle.length)]
+				);
+				audio.play();
+			}
+			if (e.key === " ") {
+				const audio = new Audio(
+					charEnter[Math.floor(Math.random() * charEnter.length)]
 				);
 				audio.play();
 			}
@@ -218,6 +238,7 @@ function App() {
 	}, []);
 
 	let messageIndex = useRef(0);
+	let messageType = useRef();
 
 	return (
 		<>
@@ -250,14 +271,26 @@ function App() {
 							user={user}
 							pageSetter={pageSetter}
 							messageIndex={messageIndex}
+							messageType={messageType}
+						/>
+					)}
+					{page == "Sent" && (
+						<Sent
+							user={user}
+							pageSetter={pageSetter}
+							messageIndex={messageIndex}
+							messageType={messageType}
 						/>
 					)}
 					{page == "Message" && (
-						<Message message={user.messagesReceived[messageIndex.current]} />
+						<Message
+							user={user}
+							messageIndex={messageIndex}
+							messageType={messageType}
+						/>
 					)}
-					{page == "Sent" && <Sent user={user} />}
 					{page == "UserList" && <UserList userList={userList} />}
-					{(page != "NavPage" && page != "Message") && (
+					{page != "NavPage" && page != "Message" && (
 						<ul>
 							<li id="NavPage" onClick={goToPage}>
 								[Go back]
@@ -266,13 +299,13 @@ function App() {
 					)}
 					{page == "Message" && (
 						<ul>
-							<li id="Inbox" onClick={goToPage}>
+							<li id={messageType.current} onClick={goToPage}>
 								[Go back]
 							</li>
 						</ul>
 					)}
 					<div className="end">
-						> <span className="cursor">▇</span>{" "}
+						<span className="arrow">></span> <span className="cursor">▇</span>
 					</div>
 				</div>
 			</div>
