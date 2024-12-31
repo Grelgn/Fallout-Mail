@@ -17,9 +17,10 @@ function Inbox(props) {
 
 	const messages = [];
 	props.user.messagesReceived.forEach((message, index) => {
+		const title = props.htmlDecode(message.title);
 		messages.push(
 			<li id="Message" key={index} onClick={(e) => goToMessage(e, index)}>
-				[{message.title}]
+				[{title}]
 			</li>
 		);
 	});

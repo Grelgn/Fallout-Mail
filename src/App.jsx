@@ -248,6 +248,11 @@ function App() {
 		[setListPage]
 	);
 
+	function htmlDecode(input) {
+		var doc = new DOMParser().parseFromString(input, "text/html");
+		return doc.documentElement.textContent;
+	}
+
 	return (
 		<>
 			<div className="scanlines">
@@ -283,6 +288,7 @@ function App() {
 								messageType={messageType}
 								listPage={listPage}
 								listPageSetter={listPageSetter}
+								htmlDecode={htmlDecode}
 							/>
 						)}
 						{page == "Sent" && (
@@ -293,6 +299,7 @@ function App() {
 								messageType={messageType}
 								listPage={listPage}
 								listPageSetter={listPageSetter}
+								htmlDecode={htmlDecode}
 							/>
 						)}
 						{page == "Message" && (
@@ -300,6 +307,7 @@ function App() {
 								user={user}
 								messageIndex={messageIndex}
 								messageType={messageType}
+								htmlDecode={htmlDecode}
 							/>
 						)}
 						{page == "UserList" && <UserList userList={userList} />}

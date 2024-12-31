@@ -6,6 +6,9 @@ function Message(props) {
 		message = props.user.messagesSent[props.messageIndex.current];
 	}
 
+	const title = props.htmlDecode(message.title);
+	const body = props.htmlDecode(message.body);
+
 	return (
 		<>
 			{props.messageType.current == "Inbox" ? (
@@ -13,8 +16,8 @@ function Message(props) {
 			) : (
 				<div>Receiver: {message.receiver.username}</div>
 			)}
-			<div>Subject: {message.title}</div>
-			<div>Message: {message.body}</div>
+			<div>Subject: {title}</div>
+			<div>Message: {body}</div>
 		</>
 	);
 }
