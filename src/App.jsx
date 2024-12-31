@@ -54,6 +54,7 @@ function App() {
 	);
 
 	function goToPage(e) {
+		setListPage(0);
 		setPage(e.target.id);
 	}
 
@@ -239,6 +240,14 @@ function App() {
 
 	let messageIndex = useRef(0);
 	let messageType = useRef();
+	// let listPage = useRef(0);
+	const [listPage, setListPage] = useState(0);
+	const listPageSetter = useCallback(
+		(val) => {
+			setListPage(val);
+		},
+		[setListPage]
+	);
 
 	return (
 		<>
@@ -249,62 +258,67 @@ function App() {
 						{isLoggedIn && <div>Welcome, {user.username}!</div>}
 						<br />
 					</div>
-					{page == "NavPage" && (
-						<NavPage
-							pageSetter={pageSetter}
-							isLoggedIn={isLoggedIn}
-							user={user}
-							isLoggedInSetter={isLoggedInSetter}
-						/>
-					)}
-					{page == "SignUp" && <SignUp />}
-					{page == "LogIn" && (
-						<LogIn
-							isLoggedInSetter={isLoggedInSetter}
-							userSetter={userSetter}
-							userListSetter={userListSetter}
-						/>
-					)}
-					{page == "SendMessage" && <SendMessage user={user} />}
-					{page == "Inbox" && (
-						<Inbox
-							user={user}
-							pageSetter={pageSetter}
-							messageIndex={messageIndex}
-							messageType={messageType}
-						/>
-					)}
-					{page == "Sent" && (
-						<Sent
-							user={user}
-							pageSetter={pageSetter}
-							messageIndex={messageIndex}
-							messageType={messageType}
-						/>
-					)}
-					{page == "Message" && (
-						<Message
-							user={user}
-							messageIndex={messageIndex}
-							messageType={messageType}
-						/>
-					)}
-					{page == "UserList" && <UserList userList={userList} />}
-					{page != "NavPage" && page != "Message" && (
-						<ul>
-							<li id="NavPage" onClick={goToPage}>
-								[Go back]
-							</li>
-						</ul>
-					)}
-					{page == "Message" && (
-						<ul>
-							<li id={messageType.current} onClick={goToPage}>
-								[Go back]
-							</li>
-						</ul>
-					)}
+					<div className="main">
+						{page == "NavPage" && (
+							<NavPage
+								pageSetter={pageSetter}
+								isLoggedIn={isLoggedIn}
+								user={user}
+								isLoggedInSetter={isLoggedInSetter}
+							/>
+						)}
+						{page == "SignUp" && <SignUp />}
+						{page == "LogIn" && (
+							<LogIn
+								isLoggedInSetter={isLoggedInSetter}
+								userSetter={userSetter}
+								userListSetter={userListSetter}
+							/>
+						)}
+						{page == "SendMessage" && <SendMessage user={user} />}
+						{page == "Inbox" && (
+							<Inbox
+								user={user}
+								pageSetter={pageSetter}
+								messageIndex={messageIndex}
+								messageType={messageType}
+								listPage={listPage}
+								listPageSetter={listPageSetter}
+							/>
+						)}
+						{page == "Sent" && (
+							<Sent
+								user={user}
+								pageSetter={pageSetter}
+								messageIndex={messageIndex}
+								messageType={messageType}
+							/>
+						)}
+						{page == "Message" && (
+							<Message
+								user={user}
+								messageIndex={messageIndex}
+								messageType={messageType}
+							/>
+						)}
+						{page == "UserList" && <UserList userList={userList} />}
+						{page != "NavPage" && page != "Message" && (
+							<ul className="go-back">
+								<li id="NavPage" onClick={goToPage}>
+									[Go back]
+								</li>
+							</ul>
+						)}
+						{page == "Message" && (
+							<ul>
+								<li id={messageType.current} onClick={goToPage}>
+									[Go back]
+								</li>
+							</ul>
+						)}
+					</div>
 					<div className="end">
+						<br />
 						<span className="arrow">></span> <span className="cursor">▇</span>
 					</div>
 				</div>

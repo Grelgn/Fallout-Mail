@@ -26,7 +26,7 @@ function SendMessage(props) {
 	}
 
 	return (
-		<form action="POST">
+		<form action="POST" className="send-message-form">
 			<ul>
 				<li>
 					<label htmlFor="receiver">To:</label>

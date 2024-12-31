@@ -65,21 +65,38 @@ textarea {
 	width: max-content;
 	flex: 1;
 }
-form {
+/* form {
 	flex: 10;
 	display: flex;
-}
+} */
 
 ul {
-	flex: 1;
+	/* flex: 1; */
 	display: flex;
 	flex-direction: column;
 }
 
+.main {
+	flex: auto;
+	display: flex;
+	flex-direction: column;
+}
 
+.send-message-form {
+	display: flex;
+	flex-direction: column;
+	flex: 10;
+}
 
-.message {
-	/* height: 45svh; */
+.send-message-form > ul {
+	flex: auto;
+}
+
+.send-message-form > ul > .message {
+	flex: auto;
+}
+
+.go-back {
 	flex: 1;
 }
 
@@ -136,11 +153,6 @@ ul {
 	padding: 50px;
 	display: flex;
 	flex-direction: column;
-}
-
-.end {
-	flex: 1;
-	align-content: end;
 }
 
 .cursor {
