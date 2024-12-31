@@ -150,7 +150,7 @@ ul {
 }
 
 .content {
-	padding: 50px;
+	padding: 25px 100px;
 	display: flex;
 	flex-direction: column;
 }

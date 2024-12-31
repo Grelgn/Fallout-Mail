@@ -54,7 +54,7 @@ function App() {
 	);
 
 	function goToPage(e) {
-		setListPage(0);
+		if (e.target.id == "NavPage") setListPage(0);
 		setPage(e.target.id);
 	}
 
@@ -240,7 +240,6 @@ function App() {
 
 	let messageIndex = useRef(0);
 	let messageType = useRef();
-	// let listPage = useRef(0);
 	const [listPage, setListPage] = useState(0);
 	const listPageSetter = useCallback(
 		(val) => {
@@ -292,6 +291,8 @@ function App() {
 								pageSetter={pageSetter}
 								messageIndex={messageIndex}
 								messageType={messageType}
+								listPage={listPage}
+								listPageSetter={listPageSetter}
 							/>
 						)}
 						{page == "Message" && (
