@@ -117,6 +117,7 @@ function App() {
 	let isPrintingLines = useRef(true);
 
 	function printLines(l) {
+		const realCursor = document.querySelector(".cursor");
 		isPrintingLines.current = true;
 		// Excluding lines
 		if (!firstLoad.current) {
@@ -127,10 +128,19 @@ function App() {
 		}
 
 		l.forEach((line) => {
+			//Cursor
+			const cursor = document.createElement("span");
+			cursor.textContent = "▇";
+			cursor.classList.add("cursor");
+			cursor.style.animationDelay = -lineTime.current + "ms";
+
 			const lineText = line.textContent;
 			line.textContent = "";
 
 			setTimeout(() => {
+				if (!line.parentNode.contains(realCursor)) {
+					line.parentNode.appendChild(cursor);
+				}
 				// Each character
 				for (let i = 0; i < lineText.length; i++) {
 					setTimeout(() => {
@@ -140,6 +150,10 @@ function App() {
 					}, charTime.current * i);
 				}
 			}, lineTime.current);
+
+			setTimeout(() => {
+				cursor.remove();
+			}, lineTime.current + charTime.current * lineText.length);
 
 			lineTime.current += charTime.current * lineText.length;
 		});
