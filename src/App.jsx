@@ -300,6 +300,7 @@ function App() {
 								user={user}
 								terminalMessageSetter={terminalMessageSetter}
 								pageSetter={pageSetter}
+								userList={userList}
 							/>
 						)}
 						{page == "Inbox" && (

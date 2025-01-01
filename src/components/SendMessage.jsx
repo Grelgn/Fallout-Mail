@@ -22,10 +22,18 @@ function SendMessage(props) {
 			}),
 		});
 		const json = await response.json();
-		console.log(json);
+
 		if (json.success) {
 			props.pageSetter("NavPage");
 			props.terminalMessageSetter(json.message + ".");
+
+			// Add message data to local sent messages list
+			props.userList.forEach((user) => {
+				if (user.id == json.data.receiverId) {
+					json.data.receiver = { username: user.username };
+				}
+			});
+			props.user.messagesSent.push(json.data);
 		} else {
 			if (json.errors != undefined) {
 				props.terminalMessageSetter(json.errors[0].msg + ".");
