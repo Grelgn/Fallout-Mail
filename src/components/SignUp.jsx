@@ -1,11 +1,11 @@
-function SignUp() {
+function SignUp(props) {
 	const API_URL = import.meta.env.VITE_API_URL;
 
 	async function handleSignUp(e) {
 		e.preventDefault();
-		const username = document.querySelector("#username").value;
-		const password = document.querySelector("#password").value;
-		const confirm = document.querySelector("#confirm").value;
+		const username = document.querySelector("#username");
+		const password = document.querySelector("#password");
+		const confirm = document.querySelector("#confirm");
 		const response = await fetch(API_URL + "/sign-up", {
 			method: "POST",
 			headers: {
@@ -13,13 +13,27 @@ function SignUp() {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				username: username,
-				password: password,
-				confirm: confirm,
+				username: username.value,
+				password: password.value,
+				confirm: confirm.value,
 			}),
 		});
 		const json = await response.json();
 		console.log(json);
+		if (json.success) {
+			props.pageSetter("NavPage");
+			props.terminalMessageSetter(json.message + ".");
+		} else {
+			username.value = "";
+			password.value = "";
+			confirm.value = "";
+			if (json.errors != undefined) {
+				props.terminalMessageSetter(json.errors[0].msg + ".");
+			} else {
+				props.terminalMessageSetter(json.message + ".");
+			}
+		}
+		document.querySelector(".selected").classList.remove("selected");
 	}
 
 	return (

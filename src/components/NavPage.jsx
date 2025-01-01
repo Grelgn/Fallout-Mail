@@ -1,8 +1,4 @@
 function NavPage(props) {
-	function goToPage(e) {
-		props.pageSetter(e.target.id);
-	}
-
 	function logOut() {
 		props.isLoggedInSetter(false);
 	}
@@ -11,16 +7,16 @@ function NavPage(props) {
 		<ul>
 			{props.isLoggedIn ? (
 				<>
-					<li id="SendMessage" onClick={goToPage}>
+					<li id="SendMessage" onClick={props.goToPage}>
 						[Send a message]
 					</li>
-					<li id="Inbox" onClick={goToPage}>
+					<li id="Inbox" onClick={props.goToPage}>
 						[Inbox]
 					</li>
-					<li id="Sent" onClick={goToPage}>
+					<li id="Sent" onClick={props.goToPage}>
 						[Sent]
 					</li>
-					<li id="UserList" onClick={goToPage}>
+					<li id="UserList" onClick={props.goToPage}>
 						[List of users]
 					</li>
 					<li id="LogOut" onClick={logOut}>
@@ -29,10 +25,10 @@ function NavPage(props) {
 				</>
 			) : (
 				<>
-					<li id="SignUp" onClick={goToPage}>
+					<li id="SignUp" onClick={props.goToPage}>
 						[Sign Up]
 					</li>
-					<li id="LogIn" onClick={goToPage}>
+					<li id="LogIn" onClick={props.goToPage}>
 						[Log In]
 					</li>
 				</>

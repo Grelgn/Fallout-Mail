@@ -23,6 +23,17 @@ function SendMessage(props) {
 		});
 		const json = await response.json();
 		console.log(json);
+		if (json.success) {
+			props.pageSetter("NavPage");
+			props.terminalMessageSetter(json.message + ".");
+		} else {
+			if (json.errors != undefined) {
+				props.terminalMessageSetter(json.errors[0].msg + ".");
+			} else {
+				props.terminalMessageSetter(json.message + ".");
+			}
+		}
+		document.querySelector(".selected").classList.remove("selected");
 	}
 
 	return (

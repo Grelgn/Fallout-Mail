@@ -3,8 +3,8 @@ function LogIn(props) {
 
 	async function handleLogIn(e) {
 		e.preventDefault();
-		const username = document.querySelector("#username").value;
-		const password = document.querySelector("#password").value;
+		const username = document.querySelector("#username");
+		const password = document.querySelector("#password");
 		const response = await fetch(API_URL + "/log-in", {
 			method: "POST",
 			headers: {
@@ -12,8 +12,8 @@ function LogIn(props) {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				username: username,
-				password: password,
+				username: username.value,
+				password: password.value,
 			}),
 		});
 		const json = await response.json();
@@ -24,6 +24,12 @@ function LogIn(props) {
 			console.log(json.user);
 			props.userSetter(json.user);
 			props.userListSetter(json.userList);
+			props.terminalMessageSetter(json.message + ".");
+		} else {
+			props.terminalMessageSetter(json.message + ".");
+			username.value = "";
+			password.value = "";
+			document.querySelector(".selected").classList.remove("selected");
 		}
 	}
 

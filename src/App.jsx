@@ -55,6 +55,7 @@ function App() {
 
 	function goToPage(e) {
 		if (e.target.id == "NavPage") setListPage(0);
+		setTerminalMessage("");
 		setPage(e.target.id);
 	}
 
@@ -253,6 +254,14 @@ function App() {
 		return doc.documentElement.textContent;
 	}
 
+	const [terminalMessage, setTerminalMessage] = useState("");
+	const terminalMessageSetter = useCallback(
+		(val) => {
+			setTerminalMessage(val);
+		},
+		[setTerminalMessage]
+	);
+
 	return (
 		<>
 			<div className="scanlines">
@@ -265,21 +274,34 @@ function App() {
 					<div className="main">
 						{page == "NavPage" && (
 							<NavPage
+								goToPage={goToPage}
 								pageSetter={pageSetter}
 								isLoggedIn={isLoggedIn}
 								user={user}
 								isLoggedInSetter={isLoggedInSetter}
 							/>
 						)}
-						{page == "SignUp" && <SignUp />}
+						{page == "SignUp" && (
+							<SignUp
+								terminalMessageSetter={terminalMessageSetter}
+								pageSetter={pageSetter}
+							/>
+						)}
 						{page == "LogIn" && (
 							<LogIn
 								isLoggedInSetter={isLoggedInSetter}
 								userSetter={userSetter}
 								userListSetter={userListSetter}
+								terminalMessageSetter={terminalMessageSetter}
 							/>
 						)}
-						{page == "SendMessage" && <SendMessage user={user} />}
+						{page == "SendMessage" && (
+							<SendMessage
+								user={user}
+								terminalMessageSetter={terminalMessageSetter}
+								pageSetter={pageSetter}
+							/>
+						)}
 						{page == "Inbox" && (
 							<Inbox
 								user={user}
@@ -328,7 +350,8 @@ function App() {
 					</div>
 					<div className="end">
 						<br />
-						<span className="arrow">></span> <span className="cursor">▇</span>
+						<span className="arrow">></span> {terminalMessage}{" "}
+						<span className="cursor">▇</span>
 					</div>
 				</div>
 			</div>
