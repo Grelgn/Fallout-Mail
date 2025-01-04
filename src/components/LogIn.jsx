@@ -26,14 +26,14 @@ function LogIn(props) {
 			props.userListSetter(json.userList);
 			props.terminalMessageSetter(json.message + ".");
 			const audio = new Audio(props.passGood);
-			audio.play()
+			audio.play();
 		} else {
 			props.terminalMessageSetter(json.message + ".");
 			username.value = "";
 			password.value = "";
 			document.querySelector(".selected").classList.remove("selected");
 			const audio = new Audio(props.passBad);
-			audio.play()
+			audio.play();
 		}
 	}
 
@@ -42,7 +42,7 @@ function LogIn(props) {
 			<ul>
 				<li>
 					<label htmlFor="username">Username:</label>
-					<input type="text" name="username" id="username" />
+					<input type="text" name="username" id="username" spellCheck="false" />
 				</li>
 				<li>
 					<label htmlFor="password">Password:</label>

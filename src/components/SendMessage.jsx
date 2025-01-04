@@ -35,7 +35,7 @@ function SendMessage(props) {
 			});
 			props.user.messagesSent.push(json.data);
 			const audio = new Audio(props.passGood);
-			audio.play()
+			audio.play();
 		} else {
 			if (json.errors != undefined) {
 				props.terminalMessageSetter(json.errors[0].msg + ".");
@@ -43,7 +43,7 @@ function SendMessage(props) {
 				props.terminalMessageSetter(json.message + ".");
 			}
 			const audio = new Audio(props.passBad);
-			audio.play()
+			audio.play();
 		}
 		document.querySelector(".selected").classList.remove("selected");
 	}
@@ -53,15 +53,15 @@ function SendMessage(props) {
 			<ul>
 				<li>
 					<label htmlFor="receiver">To:</label>
-					<input type="text" name="receiver" id="receiver" />
+					<input type="text" name="receiver" id="receiver" spellCheck="false" />
 				</li>
 				<li>
 					<label htmlFor="title">Subject:</label>
-					<input type="text" name="title" id="title" />
+					<input type="text" name="title" id="title" spellCheck="false" />
 				</li>
 				<li className="message">
 					<label htmlFor="body">Message:</label>
-					<textarea name="body" id="body" />
+					<textarea name="body" id="body" spellCheck="false" />
 				</li>
 				<li>
 					<button type="submit" onClick={handleSendMessage}>

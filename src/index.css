@@ -15,7 +15,7 @@ body {
 	margin: 0;
 	height: 100svh;
 	background-color: black;
-	font-size: 40px;
+	font-size: 36px;
 }
 
 body,
@@ -166,4 +166,8 @@ ul {
 	50% {
 		opacity: 1;
 	}
+}
+
+.message-display {
+	white-space: pre-wrap;
 }

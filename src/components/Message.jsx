@@ -11,13 +11,16 @@ function Message(props) {
 
 	return (
 		<>
-			{props.messageType.current == "Inbox" ? (
+			{/* {props.messageType.current == "Inbox" ? (
 				<div>Sender: {message.sender.username}</div>
 			) : (
 				<div>Receiver: {message.receiver.username}</div>
-			)}
-			<div>Subject: {title}</div>
-			<div>Message: {body}</div>
+			)} */}
+			{/* <span>Subject: {title}</span> */}
+			<div className="message-display">{body}</div>
+			<ul>
+				<li>[Next Page]</li>
+			</ul>
 		</>
 	);
 }
