@@ -25,11 +25,15 @@ function LogIn(props) {
 			props.userSetter(json.user);
 			props.userListSetter(json.userList);
 			props.terminalMessageSetter(json.message + ".");
+			const audio = new Audio(props.passGood);
+			audio.play()
 		} else {
 			props.terminalMessageSetter(json.message + ".");
 			username.value = "";
 			password.value = "";
 			document.querySelector(".selected").classList.remove("selected");
+			const audio = new Audio(props.passBad);
+			audio.play()
 		}
 	}
 

@@ -34,12 +34,16 @@ function SendMessage(props) {
 				}
 			});
 			props.user.messagesSent.push(json.data);
+			const audio = new Audio(props.passGood);
+			audio.play()
 		} else {
 			if (json.errors != undefined) {
 				props.terminalMessageSetter(json.errors[0].msg + ".");
 			} else {
 				props.terminalMessageSetter(json.message + ".");
 			}
+			const audio = new Audio(props.passBad);
+			audio.play()
 		}
 		document.querySelector(".selected").classList.remove("selected");
 	}

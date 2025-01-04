@@ -18,6 +18,9 @@ import charScroll from "/src/assets/sounds/CharScroll_LP.wav";
 const hardDrive = Object.keys(
 	import.meta.glob("/src/assets/sounds/HardDrive*.wav")
 );
+import fanHum from "/src/assets/sounds/FanHum_LP.wav";
+import passBad from "/src/assets/sounds/PassBad.wav";
+import passGood from "/src/assets/sounds/PassGood.wav";
 
 function App() {
 	const [page, setPage] = useState("NavPage");
@@ -179,6 +182,33 @@ function App() {
 		firstLoad.current = false;
 	}
 
+	// Audio Loop
+	const audioContext = new AudioContext();
+	async function loopAudio(audioUrl) {
+		const response = await fetch(audioUrl);
+		const arrayBuffer = await response.arrayBuffer();
+
+		const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+		const bufferSource = audioContext.createBufferSource();
+		bufferSource.buffer = audioBuffer;
+
+		const gainNode = audioContext.createGain();
+		gainNode.gain.value = 0.1;
+
+		bufferSource.loop = true;
+
+		bufferSource.connect(gainNode);
+		gainNode.connect(audioContext.destination);
+
+		bufferSource.start(0);
+
+		return {
+			source: bufferSource,
+			gainNode: gainNode,
+		};
+	}
+
 	// Only once
 	useEffect(() => {
 		window.addEventListener("keydown", (e) => {
@@ -251,6 +281,8 @@ function App() {
 				audio.play();
 			}
 		});
+
+		loopAudio(fanHum);
 	}, []);
 
 	let messageIndex = useRef(0);
@@ -293,12 +325,15 @@ function App() {
 								isLoggedIn={isLoggedIn}
 								user={user}
 								isLoggedInSetter={isLoggedInSetter}
+								terminalMessageSetter={terminalMessageSetter}
 							/>
 						)}
 						{page == "SignUp" && (
 							<SignUp
 								terminalMessageSetter={terminalMessageSetter}
 								pageSetter={pageSetter}
+								passBad={passBad}
+								passGood={passGood}
 							/>
 						)}
 						{page == "LogIn" && (
@@ -307,6 +342,8 @@ function App() {
 								userSetter={userSetter}
 								userListSetter={userListSetter}
 								terminalMessageSetter={terminalMessageSetter}
+								passBad={passBad}
+								passGood={passGood}
 							/>
 						)}
 						{page == "SendMessage" && (
@@ -315,6 +352,8 @@ function App() {
 								terminalMessageSetter={terminalMessageSetter}
 								pageSetter={pageSetter}
 								userList={userList}
+								passBad={passBad}
+								passGood={passGood}
 							/>
 						)}
 						{page == "Inbox" && (

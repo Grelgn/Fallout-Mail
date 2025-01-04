@@ -23,6 +23,8 @@ function SignUp(props) {
 		if (json.success) {
 			props.pageSetter("NavPage");
 			props.terminalMessageSetter(json.message + ".");
+			const audio = new Audio(props.passGood);
+			audio.play()
 		} else {
 			username.value = "";
 			password.value = "";
@@ -32,6 +34,8 @@ function SignUp(props) {
 			} else {
 				props.terminalMessageSetter(json.message + ".");
 			}
+			const audio = new Audio(props.passBad);
+			audio.play()
 		}
 		document.querySelector(".selected").classList.remove("selected");
 	}

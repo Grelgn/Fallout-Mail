@@ -1,5 +1,6 @@
 function NavPage(props) {
 	function logOut() {
+		props.terminalMessageSetter("");
 		props.isLoggedInSetter(false);
 	}
 
