@@ -25,18 +25,18 @@ function Inbox(props) {
 		);
 	});
 
+	const rowAmount = Math.floor((props.mainHeight - 150) / 50);
+
 	console.log("Total Messages " + messages.length);
-	const pageCount = Math.ceil(messages.length / 8);
+	const pageCount = Math.ceil(messages.length / rowAmount);
 	console.log("Page Count " + pageCount);
 
 	let pages = [];
 	for (let i = 0; i < pageCount; i++) {
-		pages[i] = messages.splice(0, 8);
+		pages[i] = messages.splice(0, rowAmount);
 	}
 
-	console.log("Pages " + pages);
 	console.log("List Page " + props.listPage);
-
 	console.log(pages[props.listPage]);
 
 	if (pages[props.listPage].length > 0) {

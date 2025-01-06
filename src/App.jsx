@@ -283,6 +283,10 @@ function App() {
 		});
 
 		loopAudio(fanHum);
+
+		// Initial height
+		const windowHeight = window.innerHeight;
+		setMainHeight(windowHeight - (150 + 100));
 	}, []);
 
 	let messageIndex = useRef(0);
@@ -308,11 +312,32 @@ function App() {
 		[setTerminalMessage]
 	);
 
+	const [mainHeight, setMainHeight] = useState(0);
+
+	function windowResize() {
+		const windowHeight = window.innerHeight;
+		const height = windowHeight - (150 + 100);
+
+		if (Math.floor(mainHeight / 50) != Math.floor(height / 50)) {
+			console.log("RESIZED");
+			const selected = document.querySelector(".selected");
+			if (selected) selected.classList.remove("selected");
+			setMainHeight(height);
+			setListPage(0);
+		}
+	}
+
+	let resizeDelay;
+	window.onresize = () => {
+		clearTimeout(resizeDelay);
+		resizeDelay = setTimeout(windowResize, 1000);
+	};
+
 	return (
 		<>
 			<div className="scanlines">
 				<div className="content">
-					<div>
+					<div className="top">
 						<div>Welcome to ROBCO Industries (TM) Termlink</div>
 						{isLoggedIn && <div>Welcome, {user.username}!</div>}
 						<br />
@@ -365,6 +390,7 @@ function App() {
 								listPage={listPage}
 								listPageSetter={listPageSetter}
 								htmlDecode={htmlDecode}
+								mainHeight={mainHeight}
 							/>
 						)}
 						{page == "Sent" && (
