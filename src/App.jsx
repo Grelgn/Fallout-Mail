@@ -330,6 +330,9 @@ function App() {
 		const windowHeight = window.innerHeight;
 		const height = windowHeight - mainMargin.current;
 
+		console.log(li);
+		console.log(height);
+
 		if (
 			Math.floor(mainHeight / liHeight.current) !=
 				Math.floor(height / liHeight.current) ||
@@ -338,7 +341,9 @@ function App() {
 			console.log("RESIZED");
 			const selected = document.querySelector(".selected");
 			if (selected) selected.classList.remove("selected");
-			setMainHeight(height);
+			if (li * 4 < height) setMainHeight(height);
+			else setMainHeight(li * 4);
+
 			setListPage(0);
 		}
 	}

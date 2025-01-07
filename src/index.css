@@ -189,3 +189,15 @@ ul {
 		font-size: 16px;
 	}
 }
+
+@media (max-height: 350px) {
+	body {
+		font-size: 12px;
+	}
+}
+
+@media (max-height: 240px) {
+	body {
+		font-size: 8px;
+	}
+}
