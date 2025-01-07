@@ -11,9 +11,12 @@ function UserList(props) {
 
 	const users = [];
 	props.userList.forEach((user, index) => {
+		const date = new Date(user.signUpDate);
+		const formattedDate = props.formatDate(date);
+
 		users.push(
 			<li key={index}>
-				User: {user.username} Date: {user.signUpDate}
+				User: {user.username} Date: {formattedDate}
 			</li>
 		);
 	});

@@ -335,6 +335,25 @@ function App() {
 		resizeDelay = setTimeout(windowResize, 1000);
 	};
 
+	function formatDate(date, includeTime) {
+		let month = date.toLocaleString("en-us", { month: "long" });
+		const day = date.getDate();
+		let hours = date.getHours().toString();
+		let minutes = date.getMinutes().toString();
+		let year = date.getFullYear();
+
+		year += 50;
+
+		if (hours.length == 1) hours = "0" + hours;
+		if (minutes.length == 1) minutes = "0" + minutes;
+
+		if (includeTime) {
+			return month + " " + day + ", " + year + ", " + hours + ":" + minutes;
+		} else {
+			return month + " " + day + ", " + year;
+		}
+	}
+
 	return (
 		<>
 			<div className="scanlines">
@@ -421,6 +440,7 @@ function App() {
 								listPage={listPage}
 								listPageSetter={listPageSetter}
 								mainHeight={mainHeight}
+								formatDate={formatDate}
 							/>
 						)}
 						{page != "NavPage" && page != "Message" && (
