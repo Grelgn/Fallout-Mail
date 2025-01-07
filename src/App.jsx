@@ -209,6 +209,8 @@ function App() {
 		};
 	}
 
+	const mainMargin = 150 + 100 + 20 + 20;
+
 	// Only once
 	useEffect(() => {
 		window.addEventListener("keydown", (e) => {
@@ -286,7 +288,7 @@ function App() {
 
 		// Initial height
 		const windowHeight = window.innerHeight;
-		setMainHeight(windowHeight - (150 + 100));
+		setMainHeight(windowHeight - mainMargin);
 	}, []);
 
 	let messageIndex = useRef(0);
@@ -316,7 +318,7 @@ function App() {
 
 	function windowResize() {
 		const windowHeight = window.innerHeight;
-		const height = windowHeight - (150 + 100);
+		const height = windowHeight - mainMargin;
 
 		if (Math.floor(mainHeight / 50) != Math.floor(height / 50)) {
 			console.log("RESIZED");
@@ -402,6 +404,7 @@ function App() {
 								listPage={listPage}
 								listPageSetter={listPageSetter}
 								htmlDecode={htmlDecode}
+								mainHeight={mainHeight}
 							/>
 						)}
 						{page == "Message" && (
@@ -412,7 +415,14 @@ function App() {
 								htmlDecode={htmlDecode}
 							/>
 						)}
-						{page == "UserList" && <UserList userList={userList} />}
+						{page == "UserList" && (
+							<UserList
+								userList={userList}
+								listPage={listPage}
+								listPageSetter={listPageSetter}
+								mainHeight={mainHeight}
+							/>
+						)}
 						{page != "NavPage" && page != "Message" && (
 							<ul className="go-back">
 								<li id="NavPage" onClick={goToPage}>
