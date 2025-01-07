@@ -35,6 +35,16 @@ function LogIn(props) {
 			const audio = new Audio(props.passBad);
 			audio.play();
 		}
+		setInitialScale();
+	}
+
+	function setInitialScale() {
+		const li = document.querySelector("li").clientHeight;
+		props.liHeight.current = li;
+		props.mainMargin.current = li * 5 + 20 + 20;
+		const windowHeight = window.innerHeight;
+		const height = windowHeight - props.mainMargin.current;
+		props.mainHeightSetter(height);
 	}
 
 	return (

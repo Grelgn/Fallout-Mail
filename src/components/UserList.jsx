@@ -21,7 +21,9 @@ function UserList(props) {
 		);
 	});
 
-	const rowAmount = Math.floor((props.mainHeight - 150) / 50);
+	const rowAmount = Math.floor(
+		(props.mainHeight - props.liHeight.current * 3) / props.liHeight.current
+	);
 	const pageCount = Math.ceil(users.length / rowAmount);
 
 	let pages = [];

@@ -25,7 +25,9 @@ function Inbox(props) {
 		);
 	});
 
-	const rowAmount = Math.floor((props.mainHeight - 150) / 50);
+	const rowAmount = Math.floor(
+		(props.mainHeight - props.liHeight.current * 3) / props.liHeight.current
+	);
 
 	console.log("Total Messages " + messages.length);
 	const pageCount = Math.ceil(messages.length / rowAmount);

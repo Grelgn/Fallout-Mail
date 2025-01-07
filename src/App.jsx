@@ -209,7 +209,8 @@ function App() {
 		};
 	}
 
-	const mainMargin = 150 + 100 + 20 + 20;
+	const mainMargin = useRef(150 + 100 + 20 + 20);
+	const liHeight = useRef(0);
 
 	// Only once
 	useEffect(() => {
@@ -285,10 +286,6 @@ function App() {
 		});
 
 		loopAudio(fanHum);
-
-		// Initial height
-		const windowHeight = window.innerHeight;
-		setMainHeight(windowHeight - mainMargin);
 	}, []);
 
 	let messageIndex = useRef(0);
@@ -315,12 +312,29 @@ function App() {
 	);
 
 	const [mainHeight, setMainHeight] = useState(0);
+	const mainHeightSetter = useCallback(
+		(val) => {
+			setMainHeight(val);
+		},
+		[setMainHeight]
+	);
 
 	function windowResize() {
+		// Set scale
+		const li = document.querySelector("li").clientHeight;
+		const oldLi = liHeight.current;
+		if (oldLi != li) {
+			liHeight.current = li;
+			mainMargin.current = li * 5 + 20 + 20;
+		}
 		const windowHeight = window.innerHeight;
-		const height = windowHeight - mainMargin;
+		const height = windowHeight - mainMargin.current;
 
-		if (Math.floor(mainHeight / 50) != Math.floor(height / 50)) {
+		if (
+			Math.floor(mainHeight / liHeight.current) !=
+				Math.floor(height / liHeight.current) ||
+			oldLi != liHeight.current
+		) {
 			console.log("RESIZED");
 			const selected = document.querySelector(".selected");
 			if (selected) selected.classList.remove("selected");
@@ -390,6 +404,9 @@ function App() {
 								terminalMessageSetter={terminalMessageSetter}
 								passBad={passBad}
 								passGood={passGood}
+								liHeight={liHeight}
+								mainMargin={mainMargin}
+								mainHeightSetter={mainHeightSetter}
 							/>
 						)}
 						{page == "SendMessage" && (
@@ -412,6 +429,7 @@ function App() {
 								listPageSetter={listPageSetter}
 								htmlDecode={htmlDecode}
 								mainHeight={mainHeight}
+								liHeight={liHeight}
 							/>
 						)}
 						{page == "Sent" && (
@@ -424,6 +442,7 @@ function App() {
 								listPageSetter={listPageSetter}
 								htmlDecode={htmlDecode}
 								mainHeight={mainHeight}
+								liHeight={liHeight}
 							/>
 						)}
 						{page == "Message" && (
@@ -441,6 +460,7 @@ function App() {
 								listPageSetter={listPageSetter}
 								mainHeight={mainHeight}
 								formatDate={formatDate}
+								liHeight={liHeight}
 							/>
 						)}
 						{page != "NavPage" && page != "Message" && (
