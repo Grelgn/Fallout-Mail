@@ -86,23 +86,56 @@ function SendMessage(props) {
 		[maxLines, calculateTextDimensions, props.liHeight]
 	);
 
+	const handlePaste = useCallback(
+		(e) => {
+			e.preventDefault();
+			const pastedText = e.clipboardData.getData("text");
+			const currentText = textareaRef.current.value;
+			const selectionStart = textareaRef.current.selectionStart;
+			const selectionEnd = textareaRef.current.selectionEnd;
+
+			// Create the new text that would result from the paste
+			const newText =
+				currentText.slice(0, selectionStart) +
+				pastedText +
+				currentText.slice(selectionEnd);
+
+			const textHeight = calculateTextDimensions(newText);
+			const maxHeight = props.liHeight.current * maxLines;
+
+			if (textHeight <= maxHeight) {
+				textareaRef.current.value = newText;
+
+				// Move cursor to after the pasted text
+				const newCursorPosition = selectionStart + pastedText.length;
+				textareaRef.current.setSelectionRange(
+					newCursorPosition,
+					newCursorPosition
+				);
+			}
+		},
+		[calculateTextDimensions, maxLines, props.liHeight]
+	);
+
 	useEffect(() => {
 		const textarea = textareaRef.current;
 		if (textarea) {
 			resizeObserverRef.current = new ResizeObserver(calculateMaxLines);
 			resizeObserverRef.current.observe(textarea);
 			textarea.addEventListener("keydown", handleKeyDown);
+			textarea.addEventListener("paste", handlePaste);
 
 			calculateMaxLines();
 
 			return () => {
 				textarea.removeEventListener("keydown", handleKeyDown);
+				textarea.removeEventListener("paste", handlePaste);
 				if (resizeObserverRef.current) {
 					resizeObserverRef.current.disconnect();
 				}
 			};
 		}
-	}, [calculateMaxLines, handleKeyDown]);
+	}, [calculateMaxLines, handleKeyDown, handlePaste]);
 
 	async function handleSendMessage(e) {
 		e.preventDefault();
