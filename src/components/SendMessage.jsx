@@ -7,13 +7,6 @@ function SendMessage(props) {
 	const [maxLines, setMaxLines] = useState(null);
 	const resizeObserverRef = useRef(null);
 
-	const calculateMaxLines = useCallback(() => {
-		if (!textareaRef.current || !props.liHeight.current) return;
-		const textareaHeight = textareaRef.current.clientHeight;
-		const newMaxLines = Math.floor(textareaHeight / props.liHeight.current - 1);
-		setMaxLines(newMaxLines);
-	}, [props.liHeight]);
-
 	const calculateTextDimensions = useCallback((text) => {
 		if (!textareaRef.current) return 0;
 
@@ -49,6 +42,48 @@ function SendMessage(props) {
 		return height;
 	}, []);
 
+	const findMaxFittingText = useCallback(
+		(text) => {
+			if (!textareaRef.current || !props.liHeight.current) return text;
+
+			const maxHeight = textareaRef.current.clientHeight;
+			if (calculateTextDimensions(text) <= maxHeight) return text;
+
+			let left = 0;
+			let right = text.length;
+			let result = "";
+
+			while (left <= right) {
+				const mid = Math.floor((left + right) / 2);
+				const testText = text.slice(0, mid);
+
+				if (calculateTextDimensions(testText) <= maxHeight) {
+					result = testText;
+					left = mid + 1;
+				} else {
+					right = mid - 1;
+				}
+			}
+
+			return result;
+		},
+		[calculateTextDimensions, props.liHeight]
+	);
+
+	const calculateMaxLines = useCallback(() => {
+		if (!textareaRef.current || !props.liHeight.current) return;
+		const textareaHeight = textareaRef.current.clientHeight;
+		const newMaxLines = Math.floor(textareaHeight / props.liHeight.current);
+		setMaxLines(newMaxLines);
+
+		// Trim overflow text when textarea is resized
+		const currentText = textareaRef.current.value;
+		const fittingText = findMaxFittingText(currentText);
+		if (fittingText !== currentText) {
+			textareaRef.current.value = fittingText;
+		}
+	}, [props.liHeight, findMaxFittingText]);
+
 	const handleKeyDown = useCallback(
 		(e) => {
 			const allowedKeys = [
@@ -56,14 +91,13 @@ function SendMessage(props) {
 				"Delete",
 				"ArrowLeft",
 				"ArrowRight",
-				"ArrowUp",
-				"ArrowDown",
 				"Home",
 				"End",
 				"Tab",
 				"F11",
 				"F5",
 				"Escape",
+				"F12",
 			];
 
 			const isControlKey = e.ctrlKey || e.metaKey;
