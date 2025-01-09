@@ -72,8 +72,15 @@ function App() {
 	let selectedItem = useRef(0);
 	let lines = useRef([]);
 
-	// Every refresh
+	// Every page change
 	useEffect(() => {
+		renderLines();
+	}, [page]);
+
+	function renderLines() {
+		const selected = document.querySelector(".selected");
+		if (selected) selected.classList.remove("selected");
+
 		selectedItem.current = 0;
 		items.current = document.querySelectorAll("li");
 
@@ -88,7 +95,7 @@ function App() {
 			hardDrive[Math.floor(Math.random() * hardDrive.length)]
 		);
 		audio.play();
-	});
+	}
 
 	function getLines(n) {
 		n.forEach((node) => {
@@ -325,6 +332,10 @@ function App() {
 		[setMainHeight]
 	);
 
+	useEffect(() => {
+		if (["Inbox", "Sent", "UserList"].includes(page)) renderLines();
+	}, [mainHeight]);
+
 	function windowResize() {
 		// Set scale
 		const li = document.querySelector("li").clientHeight;
@@ -336,17 +347,12 @@ function App() {
 		const windowHeight = window.innerHeight;
 		const height = windowHeight - mainMargin.current;
 
-		console.log(li);
-		console.log(height);
-
 		if (
 			Math.floor(mainHeight / liHeight.current) !=
 				Math.floor(height / liHeight.current) ||
 			oldLi != liHeight.current
 		) {
 			console.log("RESIZED");
-			const selected = document.querySelector(".selected");
-			if (selected) selected.classList.remove("selected");
 			if (li * 4 < height) setMainHeight(height);
 			else setMainHeight(li * 4);
 
@@ -356,10 +362,8 @@ function App() {
 
 	let resizeDelay;
 	window.onresize = () => {
-		if (page == "Inbox" || page == "Sent" || page == "UserList") {
-			clearTimeout(resizeDelay);
-			resizeDelay = setTimeout(windowResize, 1000);
-		}
+		clearTimeout(resizeDelay);
+		resizeDelay = setTimeout(windowResize, 1000);
 	};
 
 	function formatDate(date, includeTime) {
