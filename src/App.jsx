@@ -56,10 +56,16 @@ function App() {
 		[setUserList]
 	);
 
+	let firstEnter = useRef(true);
+
 	function goToPage(e) {
 		if (e.target.id == "NavPage") setListPage(0);
 		setTerminalMessage("");
 		setPage(e.target.id);
+		if (firstEnter.current) {
+			forceFullscreen();
+			firstEnter.current = false;
+		}
 	}
 
 	let items = useRef();
@@ -350,8 +356,10 @@ function App() {
 
 	let resizeDelay;
 	window.onresize = () => {
-		clearTimeout(resizeDelay);
-		resizeDelay = setTimeout(windowResize, 1000);
+		if (page == "Inbox" || page == "Sent" || page == "UserList") {
+			clearTimeout(resizeDelay);
+			resizeDelay = setTimeout(windowResize, 1000);
+		}
 	};
 
 	function formatDate(date, includeTime) {
@@ -370,6 +378,12 @@ function App() {
 			return month + " " + day + ", " + year + ", " + hours + ":" + minutes;
 		} else {
 			return month + " " + day + ", " + year;
+		}
+	}
+
+	function forceFullscreen() {
+		if (window.innerHeight != screen.height) {
+			document.documentElement.requestFullscreen();
 		}
 	}
 
