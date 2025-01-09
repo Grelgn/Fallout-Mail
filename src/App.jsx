@@ -72,10 +72,18 @@ function App() {
 	let selectedItem = useRef(0);
 	let lines = useRef([]);
 
+	const [listPage, setListPage] = useState(0);
+	const listPageSetter = useCallback(
+		(val) => {
+			setListPage(val);
+		},
+		[setListPage]
+	);
+
 	// Every page change
 	useEffect(() => {
 		renderLines();
-	}, [page]);
+	}, [page, listPage, isLoggedIn]);
 
 	function renderLines() {
 		const selected = document.querySelector(".selected");
@@ -233,6 +241,8 @@ function App() {
 				!isPrintingLines.current &&
 				selectedItem.current > 0
 			) {
+				e.preventDefault();
+				document.activeElement.blur();
 				items.current[selectedItem.current].classList.remove("selected");
 				selectedItem.current -= 1;
 				items.current[selectedItem.current].classList.add("selected");
@@ -249,6 +259,8 @@ function App() {
 				!isPrintingLines.current &&
 				selectedItem.current < items.current.length - 1
 			) {
+				e.preventDefault();
+				document.activeElement.blur();
 				items.current[selectedItem.current].classList.remove("selected");
 				selectedItem.current += 1;
 				items.current[selectedItem.current].classList.add("selected");
@@ -303,13 +315,6 @@ function App() {
 
 	let messageIndex = useRef(0);
 	let messageType = useRef();
-	const [listPage, setListPage] = useState(0);
-	const listPageSetter = useCallback(
-		(val) => {
-			setListPage(val);
-		},
-		[setListPage]
-	);
 
 	function htmlDecode(input) {
 		var doc = new DOMParser().parseFromString(input, "text/html");
@@ -440,6 +445,7 @@ function App() {
 								userList={userList}
 								passBad={passBad}
 								passGood={passGood}
+								liHeight={liHeight}
 							/>
 						)}
 						{page == "Inbox" && (
@@ -474,6 +480,7 @@ function App() {
 								messageIndex={messageIndex}
 								messageType={messageType}
 								htmlDecode={htmlDecode}
+								formatDate={formatDate}
 							/>
 						)}
 						{page == "UserList" && (

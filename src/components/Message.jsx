@@ -8,15 +8,20 @@ function Message(props) {
 
 	const title = props.htmlDecode(message.title);
 	const body = props.htmlDecode(message.body);
+	console.log(message);
+	const date = new Date(message.timestamp);
+	const formattedDate = props.formatDate(date, true);
 
 	return (
 		<>
-			{/* {props.messageType.current == "Inbox" ? (
-				<div>Sender: {message.sender.username}</div>
+			{props.messageType.current == "Inbox" ? (
+				<div>From: {message.sender.username}</div>
 			) : (
-				<div>Receiver: {message.receiver.username}</div>
-			)} */}
-			{/* <span>Subject: {title}</span> */}
+				<div>To: {message.receiver.username}</div>
+			)}
+			<span>{title}</span>
+			<div>{formattedDate}</div>
+			<br />
 			<div className="message-display">{body}</div>
 			<ul>
 				<li>[Next Page]</li>

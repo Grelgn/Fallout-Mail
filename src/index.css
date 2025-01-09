@@ -65,6 +65,12 @@ textarea {
 	width: max-content;
 	flex: 1;
 }
+
+textarea {
+	word-wrap: break-word;
+	overflow: hidden;
+	resize: none;
+}
 /* form {
 	flex: 10;
 	display: flex;

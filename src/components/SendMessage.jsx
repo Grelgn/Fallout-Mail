@@ -1,12 +1,115 @@
+import { useRef, useEffect, useState, useCallback } from "react";
+
 function SendMessage(props) {
 	const API_URL = import.meta.env.VITE_API_URL;
+
+	const textareaRef = useRef(null);
+	const [maxLines, setMaxLines] = useState(null);
+	const resizeObserverRef = useRef(null);
+
+	const calculateMaxLines = useCallback(() => {
+		if (!textareaRef.current || !props.liHeight.current) return;
+		const textareaHeight = textareaRef.current.clientHeight;
+		const newMaxLines = Math.floor(textareaHeight / props.liHeight.current - 1);
+		setMaxLines(newMaxLines);
+	}, [props.liHeight]);
+
+	const calculateTextDimensions = useCallback((text) => {
+		if (!textareaRef.current) return 0;
+
+		const measureDiv = document.createElement("div");
+		const computedStyle = window.getComputedStyle(textareaRef.current);
+
+		const stylesToCopy = [
+			"width",
+			"fontSize",
+			"fontFamily",
+			"lineHeight",
+			"padding",
+			"border",
+			"wordWrap",
+			"whiteSpace",
+		];
+
+		stylesToCopy.forEach((style) => {
+			measureDiv.style[style] = computedStyle[style];
+		});
+
+		measureDiv.style.position = "absolute";
+		measureDiv.style.visibility = "hidden";
+		measureDiv.style.height = "auto";
+		measureDiv.style.whiteSpace = "pre-wrap";
+
+		measureDiv.textContent = text;
+		document.body.appendChild(measureDiv);
+
+		const height = measureDiv.offsetHeight;
+		document.body.removeChild(measureDiv);
+
+		return height;
+	}, []);
+
+	const handleKeyDown = useCallback(
+		(e) => {
+			const allowedKeys = [
+				"Backspace",
+				"Delete",
+				"ArrowLeft",
+				"ArrowRight",
+				"ArrowUp",
+				"ArrowDown",
+				"Home",
+				"End",
+				"Tab",
+				"F11",
+				"F5",
+				"Escape",
+			];
+
+			const isControlKey = e.ctrlKey || e.metaKey;
+			const isSelectionKey =
+				isControlKey && (e.key === "a" || e.key === "c" || e.key === "x");
+
+			if (allowedKeys.includes(e.key) || isSelectionKey) {
+				return;
+			}
+
+			const textHeight = calculateTextDimensions(
+				textareaRef.current.value + e.key
+			);
+			const maxHeight = props.liHeight.current * maxLines;
+
+			if (textHeight > maxHeight) {
+				e.preventDefault();
+			}
+		},
+		[maxLines, calculateTextDimensions, props.liHeight]
+	);
+
+	useEffect(() => {
+		const textarea = textareaRef.current;
+		if (textarea) {
+			resizeObserverRef.current = new ResizeObserver(calculateMaxLines);
+			resizeObserverRef.current.observe(textarea);
+			textarea.addEventListener("keydown", handleKeyDown);
+
+			calculateMaxLines();
+
+			return () => {
+				textarea.removeEventListener("keydown", handleKeyDown);
+				if (resizeObserverRef.current) {
+					resizeObserverRef.current.disconnect();
+				}
+			};
+		}
+	}, [calculateMaxLines, handleKeyDown]);
 
 	async function handleSendMessage(e) {
 		e.preventDefault();
 		const sender = props.user.id;
 		const receiver = document.querySelector("#receiver").value;
 		const title = document.querySelector("#title").value;
-		const body = document.querySelector("#body").value;
+		const body = textareaRef.current.value;
 
 		const response = await fetch(API_URL + "/message", {
 			method: "POST",
@@ -45,7 +148,6 @@ function SendMessage(props) {
 			const audio = new Audio(props.passBad);
 			audio.play();
 		}
-		document.querySelector(".selected").classList.remove("selected");
 	}
 
 	return (
@@ -61,8 +163,14 @@ function SendMessage(props) {
 				</li>
 				<li className="message">
 					<label htmlFor="body">Message:</label>
-					<textarea name="body" id="body" spellCheck="false" />
+					<textarea
+						ref={textareaRef}
+						name="body"
+						id="body"
+						spellCheck="false"
+					/>
 				</li>
+				<li>[Add page]</li>
 				<li>
 					<button type="submit" onClick={handleSendMessage}>
 						[Send Message]
