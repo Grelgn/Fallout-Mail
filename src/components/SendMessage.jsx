@@ -7,6 +7,12 @@ function SendMessage(props) {
 	const [maxLines, setMaxLines] = useState(null);
 	const resizeObserverRef = useRef(null);
 
+	const [formData, setFormData] = useState({
+		receiver: "",
+		title: "",
+		body: "",
+	});
+
 	const calculateTextDimensions = useCallback((text) => {
 		if (!textareaRef.current) return 0;
 
@@ -73,7 +79,7 @@ function SendMessage(props) {
 	const calculateMaxLines = useCallback(() => {
 		if (!textareaRef.current || !props.liHeight.current) return;
 		const textareaHeight = textareaRef.current.clientHeight;
-		const newMaxLines = Math.floor(textareaHeight / props.liHeight.current);
+		const newMaxLines = Math.floor(textareaHeight / props.liHeight.current) - 1;
 		setMaxLines(newMaxLines);
 
 		// Trim overflow text when textarea is resized
@@ -81,6 +87,7 @@ function SendMessage(props) {
 		const fittingText = findMaxFittingText(currentText);
 		if (fittingText !== currentText) {
 			textareaRef.current.value = fittingText;
+			setFormData((prev) => ({ ...prev, body: fittingText }));
 		}
 	}, [props.liHeight, findMaxFittingText]);
 
@@ -139,6 +146,7 @@ function SendMessage(props) {
 
 			if (textHeight <= maxHeight) {
 				textareaRef.current.value = newText;
+				setFormData((prev) => ({ ...prev, body: newText }));
 
 				// Move cursor to after the pasted text
 				const newCursorPosition = selectionStart + pastedText.length;
@@ -153,7 +161,7 @@ function SendMessage(props) {
 
 	useEffect(() => {
 		const textarea = textareaRef.current;
-		if (textarea) {
+		if (textarea && props.messageStep == "message") {
 			resizeObserverRef.current = new ResizeObserver(calculateMaxLines);
 			resizeObserverRef.current.observe(textarea);
 			textarea.addEventListener("keydown", handleKeyDown);
@@ -169,14 +177,35 @@ function SendMessage(props) {
 				}
 			};
 		}
-	}, [calculateMaxLines, handleKeyDown, handlePaste]);
+	}, [calculateMaxLines, handleKeyDown, handlePaste, props.messageStep]);
+
+	const handleInputChange = (e) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const handleProceedToMessage = (e) => {
+		e.preventDefault();
+		if (!formData.receiver) {
+			props.terminalMessageSetter("Receiver must be specified.");
+			const audio = new Audio(props.passBad);
+			audio.play();
+			return;
+		}
+		if (!formData.title) {
+			props.terminalMessageSetter("Subject must be specified.");
+			const audio = new Audio(props.passBad);
+			audio.play();
+			return;
+		}
+		props.messageStepSetter("message");
+		props.terminalMessageSetter("");
+	};
 
 	async function handleSendMessage(e) {
 		e.preventDefault();
 		const sender = props.user.id;
-		const receiver = document.querySelector("#receiver").value;
-		const title = document.querySelector("#title").value;
-		const body = textareaRef.current.value;
+		const { receiver, title, body } = formData;
 
 		const response = await fetch(API_URL + "/message", {
 			method: "POST",
@@ -217,32 +246,61 @@ function SendMessage(props) {
 		}
 	}
 
+	function addPage() {
+		console.log("Add Page");
+	}
+
 	return (
 		<form action="POST" className="send-message-form">
 			<ul>
-				<li>
-					<label htmlFor="receiver">To:</label>
-					<input type="text" name="receiver" id="receiver" spellCheck="false" />
-				</li>
-				<li>
-					<label htmlFor="title">Subject:</label>
-					<input type="text" name="title" id="title" spellCheck="false" />
-				</li>
-				<li className="message">
-					<label htmlFor="body">Message:</label>
-					<textarea
-						ref={textareaRef}
-						name="body"
-						id="body"
-						spellCheck="false"
-					/>
-				</li>
-				<li>[Add page]</li>
-				<li>
-					<button type="submit" onClick={handleSendMessage}>
-						[Send Message]
-					</button>
-				</li>
+				{props.messageStep == "details" && (
+					<>
+						<li>
+							<label htmlFor="receiver">To:</label>
+							<input
+								type="text"
+								name="receiver"
+								id="receiver"
+								value={formData.receiver}
+								onChange={handleInputChange}
+								spellCheck="false"
+							/>
+						</li>
+						<li>
+							<label htmlFor="title">Subject:</label>
+							<input
+								type="text"
+								name="title"
+								id="title"
+								value={formData.title}
+								onChange={handleInputChange}
+								spellCheck="false"
+							/>
+						</li>
+						<li onClick={handleProceedToMessage}>[Proceed to message]</li>
+					</>
+				)}
+				{props.messageStep == "message" && (
+					<>
+						<li className="message">
+							<label htmlFor="body">Message:</label>
+							<textarea
+								ref={textareaRef}
+								name="body"
+								id="body"
+								value={formData.body}
+								onChange={handleInputChange}
+								spellCheck="false"
+							/>
+						</li>
+						<li onClick={addPage}>[Add page]</li>
+						<li>
+							<button type="submit" onClick={handleSendMessage}>
+								[Send Message]
+							</button>
+						</li>
+					</>
+				)}
 			</ul>
 		</form>
 	);

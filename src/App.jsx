@@ -59,8 +59,12 @@ function App() {
 	let firstEnter = useRef(true);
 
 	function goToPage(e) {
-		if (e.target.id == "NavPage") setListPage(0);
 		setTerminalMessage("");
+		if (messageStep == "message") {
+			setMessageStep("details");
+			return;
+		}
+		if (e.target.id == "NavPage") setListPage(0);
 		setPage(e.target.id);
 		if (firstEnter.current) {
 			forceFullscreen();
@@ -80,10 +84,26 @@ function App() {
 		[setListPage]
 	);
 
+	const [terminalMessage, setTerminalMessage] = useState("");
+	const terminalMessageSetter = useCallback(
+		(val) => {
+			setTerminalMessage(val);
+		},
+		[setTerminalMessage]
+	);
+
+	const [messageStep, setMessageStep] = useState("details");
+	const messageStepSetter = useCallback(
+		(val) => {
+			setMessageStep(val);
+		},
+		[setMessageStep]
+	);
+
 	// Every page change
 	useEffect(() => {
 		renderLines();
-	}, [page, listPage, isLoggedIn]);
+	}, [page, listPage, isLoggedIn, terminalMessage, messageStep]);
 
 	function renderLines() {
 		const selected = document.querySelector(".selected");
@@ -138,7 +158,7 @@ function App() {
 		isLoggedIn ? (firstLogin.current = false) : (firstLogin.current = true);
 	}, [isLoggedIn]);
 
-	let isPrintingLines = useRef(true);
+	const isPrintingLines = useRef(false);
 
 	function printLines(l) {
 		const realCursor = document.querySelector(".cursor");
@@ -321,14 +341,6 @@ function App() {
 		return doc.documentElement.textContent;
 	}
 
-	const [terminalMessage, setTerminalMessage] = useState("");
-	const terminalMessageSetter = useCallback(
-		(val) => {
-			setTerminalMessage(val);
-		},
-		[setTerminalMessage]
-	);
-
 	const [mainHeight, setMainHeight] = useState(0);
 	const mainHeightSetter = useCallback(
 		(val) => {
@@ -446,6 +458,8 @@ function App() {
 								passBad={passBad}
 								passGood={passGood}
 								liHeight={liHeight}
+								messageStep={messageStep}
+								messageStepSetter={messageStepSetter}
 							/>
 						)}
 						{page == "Inbox" && (
