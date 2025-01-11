@@ -355,7 +355,7 @@ function App() {
 
 	function windowResize() {
 		// Set scale
-		const li = document.querySelector("li").clientHeight;
+		const li = document.querySelector("li:last-of-type").clientHeight;
 		const oldLi = liHeight.current;
 		if (oldLi != li) {
 			liHeight.current = li;
