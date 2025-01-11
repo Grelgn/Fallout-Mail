@@ -127,11 +127,7 @@ function App() {
 
 	function getLines(n) {
 		n.forEach((node) => {
-			if (
-				node.nodeName == "BR" ||
-				node.nodeName == "INPUT" ||
-				node.className == "arrow"
-			) {
+			if (node.nodeName == "BR" || node.className == "arrow") {
 				return;
 			} else if (node.nodeName == "UL") {
 				node.childNodes.forEach((li) => {
@@ -141,6 +137,8 @@ function App() {
 						lines.current.push(li);
 					}
 				});
+			} else if (node.nodeName == "TEXTAREA") {
+				lines.current.push(node);
 			} else if (node.childNodes.length > 0) {
 				getLines(node.childNodes);
 			} else {
@@ -178,22 +176,36 @@ function App() {
 			cursor.classList.add("cursor");
 			cursor.style.animationDelay = -lineTime.current + "ms";
 
-			const lineText = line.textContent;
-			line.textContent = "";
+			let lineText;
+			if (line.nodeName == "INPUT" || line.nodeName == "TEXTAREA") {
+				lineText = line.value;
+				line.value = "";
 
-			setTimeout(() => {
-				if (!line.parentNode.contains(realCursor)) {
-					line.parentNode.appendChild(cursor);
-				}
-				// Each character
-				for (let i = 0; i < lineText.length; i++) {
-					setTimeout(() => {
-						line.textContent += lineText[i];
-						// const audio = new Audio(charScroll);
-						// audio.play()
-					}, charTime.current * i);
-				}
-			}, lineTime.current);
+				setTimeout(() => {
+					// Each character
+					for (let i = 0; i < lineText.length; i++) {
+						setTimeout(() => {
+							line.value += lineText[i];
+						}, charTime.current * i);
+					}
+					console.log(line.parentNode);
+				}, lineTime.current);
+			} else {
+				lineText = line.textContent;
+				line.textContent = "";
+
+				setTimeout(() => {
+					if (!line.parentNode.contains(realCursor)) {
+						line.parentNode.appendChild(cursor);
+					}
+					// Each character
+					for (let i = 0; i < lineText.length; i++) {
+						setTimeout(() => {
+							line.textContent += lineText[i];
+						}, charTime.current * i);
+					}
+				}, lineTime.current);
+			}
 
 			setTimeout(() => {
 				cursor.remove();
