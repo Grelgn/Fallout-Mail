@@ -40,7 +40,7 @@ function App() {
 		[setIsLoggedIn]
 	);
 
-	const [user, setUser] = useState();
+	const [user, setUser] = useState(null);
 	const userSetter = useCallback(
 		(val) => {
 			setUser(val);
@@ -48,7 +48,7 @@ function App() {
 		[setUser]
 	);
 
-	const [userList, setUserList] = useState();
+	const [userList, setUserList] = useState([]);
 	const userListSetter = useCallback(
 		(val) => {
 			setUserList(val);
@@ -177,7 +177,7 @@ function App() {
 			cursor.style.animationDelay = -lineTime.current + "ms";
 
 			let lineText;
-			if (line.nodeName == "INPUT" || line.nodeName == "TEXTAREA") {
+			if (line.nodeName == "INPUT") {
 				lineText = line.value;
 				line.value = "";
 
@@ -188,7 +188,20 @@ function App() {
 							line.value += lineText[i];
 						}, charTime.current * i);
 					}
-					console.log(line.parentNode);
+				}, lineTime.current);
+			} else if (line.nodeName == "TEXTAREA") {
+				lineText = line.value;
+				line.classList.add("invisible");
+
+				setTimeout(() => {
+					line.value = "";
+					line.classList.remove("invisible");
+					// Each character
+					for (let i = 0; i < lineText.length; i++) {
+						setTimeout(() => {
+							line.value += lineText[i];
+						}, charTime.current * i);
+					}
 				}, lineTime.current);
 			} else {
 				lineText = line.textContent;
@@ -365,6 +378,8 @@ function App() {
 		if (["Inbox", "Sent", "UserList"].includes(page)) renderLines();
 	}, [mainHeight]);
 
+	const [resized, setResized] = useState(0);
+
 	function windowResize() {
 		// Set scale
 		const li = document.querySelector("li:last-of-type").clientHeight;
@@ -382,6 +397,7 @@ function App() {
 			oldLi != liHeight.current
 		) {
 			console.log("RESIZED");
+			setResized(resized + 1);
 			if (li * 4 < height) setMainHeight(height);
 			else setMainHeight(li * 4);
 
@@ -472,6 +488,7 @@ function App() {
 								liHeight={liHeight}
 								messageStep={messageStep}
 								messageStepSetter={messageStepSetter}
+								resized={resized}
 							/>
 						)}
 						{page == "Inbox" && (

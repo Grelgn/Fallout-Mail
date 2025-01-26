@@ -4,6 +4,7 @@ function SendMessage(props) {
 	const API_URL = import.meta.env.VITE_API_URL;
 	const textareaRef = useRef(null);
 	const resizeObserverRef = useRef(null);
+	const [maxLines, setMaxLines] = useState(null);
 
 	const [formData, setFormData] = useState({
 		receiver: "",
@@ -12,11 +13,7 @@ function SendMessage(props) {
 	});
 
 	const calculateTextDimensions = useCallback((text) => {
-		console.log("Calculating dimensions for text length:", text.length);
-		if (!textareaRef.current) {
-			console.log("No textarea ref available");
-			return 0;
-		}
+		if (!textareaRef.current) return 0;
 
 		const measureDiv = document.createElement("div");
 		const computedStyle = window.getComputedStyle(textareaRef.current);
@@ -39,96 +36,69 @@ function SendMessage(props) {
 		measureDiv.style.position = "absolute";
 		measureDiv.style.visibility = "hidden";
 		measureDiv.style.height = "auto";
-		measureDiv.style.width = textareaRef.current.clientWidth + "px";
 		measureDiv.style.whiteSpace = "pre-wrap";
-
-		const processedText = text.replace(/\n/g, "<br>");
-		measureDiv.innerHTML = processedText || "<br>";
+		measureDiv.textContent = text;
 
 		document.body.appendChild(measureDiv);
 		const height = measureDiv.offsetHeight;
 		document.body.removeChild(measureDiv);
 
-		console.log("Calculated height:", height);
 		return height;
-	}, []);
-
-	const getMaxHeight = useCallback(() => {
-		if (!textareaRef.current) return 0;
-		const computedStyle = window.getComputedStyle(textareaRef.current);
-		const paddingTop = parseInt(computedStyle.paddingTop);
-		const paddingBottom = parseInt(computedStyle.paddingBottom);
-		return textareaRef.current.clientHeight - (paddingTop + paddingBottom);
 	}, []);
 
 	const findMaxFittingText = useCallback(
 		(text) => {
-			if (!textareaRef.current) return text;
+			if (!textareaRef.current || !props.liHeight.current) return text;
 
-			const maxHeight = getMaxHeight();
-			if (calculateTextDimensions(text) <= maxHeight) return text;
+			const maxHeight = textareaRef.current.clientHeight;
+			let processedText = text.replace(/\n$/, "");
+			if (calculateTextDimensions(text) <= maxHeight) return processedText;
 
-			// Start with the full text and remove characters until it fits
-			let currentText = text;
-			let start = 0;
-			let end = text.length - 1;
+			let left = 0;
+			let right = text.length;
+			let result = "";
 
-			// First use binary search to get close to the target length
-			while (start <= end) {
-				const mid = Math.floor((start + end) / 2);
-				const testText = text.slice(0, mid + 1);
+			while (left <= right) {
+				const mid = Math.floor((left + right) / 2);
+				const testText = text.slice(0, mid);
 
 				if (calculateTextDimensions(testText) <= maxHeight) {
-					start = mid + 1;
-					currentText = testText;
+					result = testText;
+					left = mid + 1;
 				} else {
-					end = mid - 1;
+					right = mid - 1;
 				}
 			}
 
-			// Now add characters one by one until we find the exact cutoff point
-			for (let i = currentText.length; i <= text.length; i++) {
-				const testText = text.slice(0, i);
-				if (calculateTextDimensions(testText) > maxHeight) {
-					return text.slice(0, i - 2);
-					// Slice 2 to get rid of the line-break
-				}
-			}
-
-			return currentText;
+			return result;
 		},
-		[calculateTextDimensions, getMaxHeight]
+		[calculateTextDimensions, props.liHeight]
 	);
 
-	const adjustTextToFit = useCallback(() => {
-		console.log("adjustTextToFit called");
-		if (!textareaRef.current) {
-			console.log("Early return - missing textarea ref");
-			return;
+	const calculateMaxLines = useCallback(() => {
+		if (!textareaRef.current || !props.liHeight.current) return;
+
+		const textareaHeight = textareaRef.current.clientHeight;
+		const newMaxLines = Math.floor(textareaHeight / props.liHeight.current);
+
+		setMaxLines(newMaxLines);
+
+		const currentText = textareaRef.current.value;
+		let fittingText = findMaxFittingText(currentText);
+
+		// Remove trailing newline if it exists
+		if (fittingText.endsWith("\n")) {
+			fittingText = fittingText.slice(0, -1);
 		}
 
-		// Check and trim existing content if needed
-		if (textareaRef.current.value) {
-			const currentHeight = calculateTextDimensions(textareaRef.current.value);
-			const maxHeight = getMaxHeight();
-
-			if (currentHeight > maxHeight) {
-				const fittingText = findMaxFittingText(textareaRef.current.value);
-				console.log("Trimming text:", {
-					currentLength: textareaRef.current.value.length,
-					fittingLength: fittingText.length,
-				});
-				textareaRef.current.value = fittingText;
-				setFormData((prev) => ({ ...prev, body: fittingText }));
-			}
+		if (fittingText !== currentText) {
+			textareaRef.current.value = fittingText;
+			setFormData((prev) => ({ ...prev, body: fittingText }));
 		}
-	}, [calculateTextDimensions, findMaxFittingText, getMaxHeight]);
+	}, [props.liHeight, findMaxFittingText]);
 
 	const handleKeyDown = useCallback(
 		(e) => {
-			console.log("liHeight:", props.liHeight);
-			
-			console.log("KeyDown event:", e.key);
 			const allowedKeys = [
 				"Backspace",
 				"Delete",
@@ -147,43 +117,25 @@ function SendMessage(props) {
 			const isSelectionKey =
 				isControlKey && (e.key === "a" || e.key === "c" || e.key === "x");
 
-			if (allowedKeys.includes(e.key) || isSelectionKey) {
-				console.log("Allowed key press");
-				return;
-			}
+			if (allowedKeys.includes(e.key) || isSelectionKey) return;
 
-			const maxHeight = getMaxHeight();
-
-			// Calculate height with new character
-			let newText = textareaRef.current.value;
-			const selectionStart = textareaRef.current.selectionStart;
-			const selectionEnd = textareaRef.current.selectionEnd;
-
-			if (e.key === "Enter") {
-				newText =
-					newText.slice(0, selectionStart) + "\n" + newText.slice(selectionEnd);
-			} else {
-				newText =
-					newText.slice(0, selectionStart) +
-					e.key +
-					newText.slice(selectionEnd);
-			}
-
-			const textHeight = calculateTextDimensions(newText);
-			console.log("Text height check:", {
-				current: textHeight,
-				max: maxHeight,
-				willPrevent: textHeight > maxHeight,
-			});
+			const textHeight = calculateTextDimensions(
+				textareaRef.current.value + e.key
+			);
+			const maxHeight = props.liHeight.current * maxLines;
 
 			if (textHeight > maxHeight) {
 				e.preventDefault();
 			}
-			if (e.key === "Enter" && textHeight > maxHeight - props.liHeight.current) {
+
+			if (
+				e.key === "Enter" &&
+				textHeight > maxHeight - props.liHeight.current
+			) {
 				e.preventDefault();
 			}
 		},
-		[calculateTextDimensions, getMaxHeight, props.liHeight]
+		[maxLines, calculateTextDimensions, props.liHeight]
 	);
 
 	const handlePaste = useCallback(
@@ -199,14 +151,12 @@ function SendMessage(props) {
 				pastedText +
 				currentText.slice(selectionEnd);
 
-			const maxHeight = getMaxHeight();
 			const textHeight = calculateTextDimensions(newText);
+			const maxHeight = props.liHeight.current * maxLines;
 
 			if (textHeight <= maxHeight) {
 				textareaRef.current.value = newText;
 				setFormData((prev) => ({ ...prev, body: newText }));
-
-				// Move cursor to after the pasted text
 				const newCursorPosition = selectionStart + pastedText.length;
 				textareaRef.current.setSelectionRange(
 					newCursorPosition,
@@ -214,32 +164,19 @@ function SendMessage(props) {
 				);
 			}
 		},
-		[calculateTextDimensions, getMaxHeight]
+		[calculateTextDimensions, maxLines, props.liHeight]
 	);
 
 	useEffect(() => {
-		console.log("Effect triggered. MessageStep:", props.messageStep);
 		const textarea = textareaRef.current;
-		console.log("Textarea ref:", textarea);
-
 		if (textarea && props.messageStep === "message") {
-			console.log("Setting up textarea observers and listeners");
-
-			// Initial adjustment
-			adjustTextToFit();
-
-			// Set up resize observer
-			resizeObserverRef.current = new ResizeObserver(() => {
-				requestAnimationFrame(adjustTextToFit);
-			});
+			resizeObserverRef.current = new ResizeObserver(calculateMaxLines);
 			resizeObserverRef.current.observe(textarea);
-
-			// Event listeners
 			textarea.addEventListener("keydown", handleKeyDown);
 			textarea.addEventListener("paste", handlePaste);
+			calculateMaxLines();
 
 			return () => {
-				console.log("Cleanup: Removing textarea observers and listeners");
 				textarea.removeEventListener("keydown", handleKeyDown);
 				textarea.removeEventListener("paste", handlePaste);
 				if (resizeObserverRef.current) {
@@ -247,7 +184,13 @@ function SendMessage(props) {
 				}
 			};
 		}
-	}, [adjustTextToFit, handleKeyDown, handlePaste, props.messageStep]);
+	}, [
+		calculateMaxLines,
+		handleKeyDown,
+		handlePaste,
+		props.messageStep,
+		props.resized,
+	]);
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
@@ -258,14 +201,12 @@ function SendMessage(props) {
 		e.preventDefault();
 		if (!formData.receiver) {
 			props.terminalMessageSetter("Receiver must be specified.");
-			const audio = new Audio(props.passBad);
-			audio.play();
+			new Audio(props.passBad).play();
 			return;
 		}
 		if (!formData.title) {
 			props.terminalMessageSetter("Subject must be specified.");
-			const audio = new Audio(props.passBad);
-			audio.play();
+			new Audio(props.passBad).play();
 			return;
 		}
 		props.messageStepSetter("message");
@@ -295,23 +236,18 @@ function SendMessage(props) {
 		if (json.success) {
 			props.pageSetter("NavPage");
 			props.terminalMessageSetter(json.message + ".");
-
 			props.userList.forEach((user) => {
 				if (user.id === json.data.receiverId) {
 					json.data.receiver = { username: user.username };
 				}
 			});
 			props.user.messagesSent.push(json.data);
-			const audio = new Audio(props.passGood);
-			audio.play();
+			new Audio(props.passGood).play();
 		} else {
-			if (json.errors !== undefined) {
-				props.terminalMessageSetter(json.errors[0].msg + ".");
-			} else {
-				props.terminalMessageSetter(json.message + ".");
-			}
-			const audio = new Audio(props.passBad);
-			audio.play();
+			props.terminalMessageSetter(
+				(json.errors?.[0]?.msg || json.message) + "."
+			);
+			new Audio(props.passBad).play();
 		}
 	}
 
