@@ -100,10 +100,22 @@ function App() {
 		[setMessageStep]
 	);
 
+	const [contentVersion, setContentVersion] = useState(0);
+	const triggerContentUpdate = useCallback(() => {
+		setContentVersion((v) => v + 1);
+	}, []);
+
 	// Every page change
 	useEffect(() => {
 		renderLines();
-	}, [page, listPage, isLoggedIn, terminalMessage, messageStep]);
+	}, [
+		page,
+		listPage,
+		isLoggedIn,
+		terminalMessage,
+		messageStep,
+		contentVersion,
+	]);
 
 	function renderLines() {
 		const selected = document.querySelector(".selected");
@@ -177,7 +189,23 @@ function App() {
 			cursor.style.animationDelay = -lineTime.current + "ms";
 
 			let lineText;
-			if (line.nodeName == "INPUT") {
+
+			if (line.parentNode?.classList?.contains("message-display")) {
+				lineText = line.textContent;
+				line.textContent = "";
+
+				setTimeout(() => {
+					if (!line.parentNode.contains(realCursor)) {
+						line.parentNode.appendChild(cursor);
+					}
+
+					for (let i = 0; i < lineText.length; i++) {
+						setTimeout(() => {
+							line.textContent += lineText[i];
+						}, charTime.current * i);
+					}
+				}, lineTime.current);
+			} else if (line.nodeName == "INPUT") {
 				lineText = line.value;
 				line.value = "";
 
@@ -524,6 +552,8 @@ function App() {
 								messageType={messageType}
 								htmlDecode={htmlDecode}
 								formatDate={formatDate}
+								liHeight={liHeight}
+								triggerContentUpdate={triggerContentUpdate}
 							/>
 						)}
 						{page == "UserList" && (
