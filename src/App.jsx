@@ -23,6 +23,8 @@ import passBad from "/src/assets/sounds/PassBad.wav";
 import passGood from "/src/assets/sounds/PassGood.wav";
 
 function App() {
+	const [isMessageReady, setIsMessageReady] = useState(false);
+
 	const [page, setPage] = useState("NavPage");
 	const pageSetter = useCallback(
 		(val) => {
@@ -36,6 +38,7 @@ function App() {
 		(val) => {
 			setIsLoggedIn(val);
 			setPage("NavPage");
+			setIsMessageReady(false);
 		},
 		[setIsLoggedIn]
 	);
@@ -63,6 +66,9 @@ function App() {
 		if (messageStep == "message") {
 			setMessageStep("details");
 			return;
+		}
+		if (page === "Message" || e.target.id === "Message") {
+			setIsMessageReady(false);
 		}
 		if (e.target.id == "NavPage") setListPage(0);
 		setPage(e.target.id);
@@ -107,6 +113,39 @@ function App() {
 
 	// Every page change
 	useEffect(() => {
+		// Don't start printing lines for the Message page until it signals it's ready
+		if (page === "Message" && !isMessageReady) {
+			console.log("Message page detected, waiting for content readiness...");
+			const mainArea = document.querySelector(".content .main");
+			if (mainArea) {
+				const oldCursorsInMain = mainArea.querySelectorAll(".cursor");
+				oldCursorsInMain.forEach((c) => {
+					c.remove();
+				});
+				console.log(
+					`Removed ${oldCursorsInMain.length} cursors from .main while waiting for message.`
+				);
+			} else {
+				console.warn(".main area not found for initial cursor cleanup.");
+			}
+			return; // Skip the rendering/animation for now
+		}
+		if (page !== "Message" && isMessageReady) {
+			setIsMessageReady(false);
+		}
+		console.log("Conditions met, running renderLines for page:", page);
+
+		const mainArea = document.querySelector(".content .main");
+		if (mainArea) {
+			// Select and remove only cursors found *within* the .main area
+			const oldCursorsInMain = mainArea.querySelectorAll(".cursor");
+			oldCursorsInMain.forEach((c) => {
+				c.remove();
+			});
+		} else {
+			console.warn(".main area not found for cursor cleanup.");
+		}
+
 		renderLines();
 	}, [
 		page,
@@ -115,6 +154,7 @@ function App() {
 		terminalMessage,
 		messageStep,
 		contentVersion,
+		isMessageReady,
 	]);
 
 	function renderLines() {
@@ -122,9 +162,14 @@ function App() {
 		if (selected) selected.classList.remove("selected");
 
 		selectedItem.current = 0;
-		items.current = document.querySelectorAll("li");
 
+		items.current = document.querySelectorAll(".main li");
 		const content = document.querySelector(".content");
+
+		if (!content) {
+			console.error("Content area not found for renderLines");
+			return;
+		}
 
 		lines.current = [];
 		lineTime.current = 0;
@@ -141,20 +186,44 @@ function App() {
 		n.forEach((node) => {
 			if (node.nodeName == "BR" || node.className == "arrow") {
 				return;
-			} else if (node.nodeName == "UL") {
-				node.childNodes.forEach((li) => {
-					if (li.childNodes.length > 0) {
-						getLines(li.childNodes);
+			}
+
+			if (
+				node.nodeName === "LI" ||
+				node.nodeName === "INPUT" ||
+				node.nodeName === "TEXTAREA"
+			) {
+				if (
+					node.nodeName === "LI" &&
+					node.childNodes.length === 1 &&
+					node.firstChild.nodeType === Node.TEXT_NODE &&
+					node.firstChild.textContent.trim()
+				) {
+					lines.current.push(node.firstChild);
+				} else if (node.nodeName === "INPUT" || node.nodeName === "TEXTAREA") {
+					lines.current.push(node);
+				} else if (node.nodeName === "LI" && node.querySelector("button")) {
+					const buttonText = node.querySelector("button")?.textContent;
+					if (buttonText && node.querySelectorAll("*").length === 1) {
+						getLines(node.childNodes);
 					} else {
-						lines.current.push(li);
+						getLines(node.childNodes);
 					}
-				});
-			} else if (node.nodeName == "TEXTAREA") {
-				lines.current.push(node);
-			} else if (node.childNodes.length > 0) {
+				} else {
+					getLines(node.childNodes);
+				}
+			} else if (
+				node.nodeType === Node.ELEMENT_NODE &&
+				node.classList?.contains("message-display")
+			) {
 				getLines(node.childNodes);
-			} else {
+			} else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
 				lines.current.push(node);
+			} else if (
+				node.nodeType === Node.ELEMENT_NODE &&
+				node.childNodes.length > 0
+			) {
+				getLines(node.childNodes);
 			}
 		});
 	}
@@ -163,16 +232,17 @@ function App() {
 	let lineTime = useRef(0);
 	let firstLoad = useRef(true);
 	let firstLogin = useRef(true);
+	const isPrintingLines = useRef(false);
 
 	useEffect(() => {
 		isLoggedIn ? (firstLogin.current = false) : (firstLogin.current = true);
 	}, [isLoggedIn]);
 
-	const isPrintingLines = useRef(false);
-
 	function printLines(l) {
 		const realCursor = document.querySelector(".cursor");
 		isPrintingLines.current = true;
+		lineTime.current = 0;
+
 		// Excluding lines
 		if (!firstLoad.current) {
 			l.splice(0, 1);
@@ -181,6 +251,12 @@ function App() {
 			l.splice(0, 3);
 		}
 
+		const audio = new Audio(charScroll);
+		audio.loop = true;
+		audio.play().catch((e) => console.error("Error playing charScroll:", e));
+
+		const initialCharDelay = 30;
+
 		l.forEach((line) => {
 			//Cursor
 			const cursor = document.createElement("span");
@@ -188,91 +264,143 @@ function App() {
 			cursor.classList.add("cursor");
 			cursor.style.animationDelay = -lineTime.current + "ms";
 
-			let lineText;
+			let lineText = "";
+			let targetElement = line;
+			let isTextNode = false;
+			let isInput = false;
+			let isTextArea = false;
+			let parentForCursor = null;
 
-			if (line.parentNode?.classList?.contains("message-display")) {
+			// --- Determine Text and Target ---
+			if (line.nodeType === Node.TEXT_NODE) {
 				lineText = line.textContent;
-				line.textContent = "";
-
-				setTimeout(() => {
-					if (!line.parentNode.contains(realCursor)) {
-						line.parentNode.appendChild(cursor);
-					}
-
-					for (let i = 0; i < lineText.length; i++) {
-						setTimeout(() => {
-							line.textContent += lineText[i];
-						}, charTime.current * i);
-					}
-				}, lineTime.current);
-			} else if (line.nodeName == "INPUT") {
+				isTextNode = true;
+				parentForCursor = line.parentNode;
+			} else if (line.nodeName === "INPUT") {
 				lineText = line.value;
-				line.value = "";
-
-				setTimeout(() => {
-					// Each character
-					for (let i = 0; i < lineText.length; i++) {
-						setTimeout(() => {
-							line.value += lineText[i];
-						}, charTime.current * i);
-					}
-				}, lineTime.current);
-			} else if (line.nodeName == "TEXTAREA") {
+				isInput = true;
+			} else if (line.nodeName === "TEXTAREA") {
 				lineText = line.value;
-				line.classList.add("invisible");
-
-				setTimeout(() => {
-					line.value = "";
-					line.classList.remove("invisible");
-					// Each character
-					for (let i = 0; i < lineText.length; i++) {
-						setTimeout(() => {
-							line.value += lineText[i];
-						}, charTime.current * i);
-					}
-				}, lineTime.current);
+				isTextArea = true;
+			} else if (
+				line.nodeName === "LI" &&
+				line.childNodes.length === 1 &&
+				line.firstChild.nodeType === Node.TEXT_NODE
+			) {
+				targetElement = line.firstChild;
+				lineText = targetElement.textContent;
+				isTextNode = true;
+				parentForCursor = line;
+			} else if (line.nodeName === "LI" && line.childNodes.length > 1) {
+				console.log("Skipping complex LI structure in printLines:", line);
+				return;
 			} else {
-				lineText = line.textContent;
-				line.textContent = "";
-
-				setTimeout(() => {
-					if (!line.parentNode.contains(realCursor)) {
-						line.parentNode.appendChild(cursor);
-					}
-					// Each character
-					for (let i = 0; i < lineText.length; i++) {
-						setTimeout(() => {
-							line.textContent += lineText[i];
-						}, charTime.current * i);
-					}
-				}, lineTime.current);
+				console.log(
+					"Skipping unhandled node type in printLines:",
+					line.nodeName,
+					line
+				);
+				return;
 			}
 
-			setTimeout(() => {
-				cursor.remove();
-			}, lineTime.current + charTime.current * lineText.length);
+			if (!lineText && lineText !== "") {
+				console.log("Skipping node with no text content:", line);
+				return;
+			}
 
-			lineTime.current += charTime.current * lineText.length;
+			// --- Calculate Timing ---
+			const animationDuration =
+				initialCharDelay + charTime.current * lineText.length;
+
+			// --- Schedule Animation ---
+			const currentLineStartTime = lineTime.current;
+
+			if (isTextNode) {
+				targetElement.textContent = "";
+				setTimeout(() => {
+					if (parentForCursor && !parentForCursor.querySelector(".cursor")) {
+						parentForCursor.appendChild(cursor);
+					}
+					for (let i = 0; i < lineText.length; i++) {
+						setTimeout(() => {
+							if (targetElement.textContent?.length === i) {
+								targetElement.textContent += lineText[i];
+							} else if (i === 0) {
+								targetElement.textContent = lineText[i];
+							}
+						}, initialCharDelay + charTime.current * i);
+					}
+				}, currentLineStartTime);
+
+				setTimeout(() => {
+					cursor.remove();
+				}, currentLineStartTime + animationDuration);
+			} else if (isInput) {
+				targetElement.value = "";
+				setTimeout(() => {
+					for (let i = 0; i < lineText.length; i++) {
+						setTimeout(() => {
+							targetElement.value += lineText[i];
+						}, initialCharDelay + charTime.current * i);
+					}
+				}, currentLineStartTime);
+			} else if (isTextArea) {
+				targetElement.value = "";
+				targetElement.classList.add("invisible"); // Keep it invisible while empty
+
+				setTimeout(() => {
+					targetElement.classList.remove("invisible"); // Make visible just before typing starts
+					for (let i = 0; i < lineText.length; i++) {
+						setTimeout(() => {
+							targetElement.value += lineText[i];
+						}, initialCharDelay + charTime.current * i);
+					}
+				}, currentLineStartTime);
+			}
+
+			// --- Update Total Time ---
+			lineTime.current += animationDuration;
 		});
 
-		const audio = new Audio(charScroll);
-		const interval = setInterval(() => {
-			audio.play();
-		}, 0);
+		// --- Final Actions After All Lines Scheduled ---
+		const finalAnimationTime = lineTime.current;
 
-		// When printing is done
 		setTimeout(() => {
-			items.current[selectedItem.current].classList.add("selected");
-			clearInterval(interval);
-			const audio = new Audio(
+			audio.pause();
+			audio.currentTime = 0;
+
+			if (
+				items.current &&
+				selectedItem.current < items.current.length &&
+				items.current[selectedItem.current]
+			) {
+				items.current[selectedItem.current].classList.add("selected");
+				setTimeout(() => {
+					if (items.current[selectedItem.current]?.children.length > 0) {
+						items.current[selectedItem.current].children[0].focus({
+							preventScroll: true,
+						});
+					}
+				}, 0);
+			} else {
+				console.log(
+					"Could not select item:",
+					selectedItem.current,
+					items.current
+				);
+			}
+
+			const endAudio = new Audio(
 				charSingle[Math.floor(Math.random() * charSingle.length)]
 			);
-			audio.play();
-			if (items.current[selectedItem.current].children.length > 0) {
-				items.current[selectedItem.current].children[0].focus();
-			}
+			endAudio
+				.play()
+				.catch((e) => console.error("Error playing charSingle:", e));
+
 			isPrintingLines.current = false;
-		}, lineTime.current);
+			console.log("Printing finished. Total time:", finalAnimationTime);
+		}, finalAnimationTime);
+
 		firstLoad.current = false;
 	}
 
@@ -554,6 +682,7 @@ function App() {
 								formatDate={formatDate}
 								liHeight={liHeight}
 								triggerContentUpdate={triggerContentUpdate}
+								onMessageReady={() => setIsMessageReady(true)}
 							/>
 						)}
 						{page == "UserList" && (
@@ -584,7 +713,7 @@ function App() {
 					<div className="end">
 						<br />
 						<span className="arrow">></span> {terminalMessage}{" "}
-						<span className="cursor">▇</span>
+						<span className="cursor terminal-cursor">▇</span>
 					</div>
 				</div>
 			</div>

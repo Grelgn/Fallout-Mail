@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 function Message(props) {
 	const {
@@ -9,6 +9,7 @@ function Message(props) {
 		formatDate,
 		triggerContentUpdate,
 		liHeight,
+		onMessageReady,
 	} = props;
 	const messageDisplayRef = useRef(null);
 	const [pages, setPages] = useState([]);
@@ -76,19 +77,36 @@ function Message(props) {
 				bestFit = bestFit || remainingText.substring(0, 1);
 				if (bestFit) {
 					newPages.push(bestFit);
+				} else {
+					console.error("Message pagination failed to find best fit.");
+					newPages.push(remainingText.substring(0, 100));
+					remainingText = remainingText.substring(100);
+					break;
 				}
 				remainingText = remainingText.substring(bestFit.length);
 			}
 
 			setPages(newPages);
 			setCurrentPage(0);
-			triggerContentUpdate();
+			onMessageReady();
+		} catch (error) {
+			console.error("Error calculating message pages:", error);
+			setPages([body]);
+			setCurrentPage(0);
+			onMessageReady();
 		} finally {
 			if (measureDiv && document.body.contains(measureDiv)) {
 				document.body.removeChild(measureDiv);
 			}
 		}
-	}, [body, windowHeight, liHeight, triggerContentUpdate, messageDisplayRef]);
+	}, [
+		body,
+		windowHeight,
+		liHeight,
+		triggerContentUpdate,
+		onMessageReady,
+		messageDisplayRef,
+	]);
 
 	const handleNextPage = () => {
 		if (currentPage < pages.length - 1) {
