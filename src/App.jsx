@@ -128,7 +128,7 @@ function App() {
 			} else {
 				console.warn(".main area not found for initial cursor cleanup.");
 			}
-			return; // Skip the rendering/animation for now
+			return;
 		}
 		if (page !== "Message" && isMessageReady) {
 			setIsMessageReady(false);
@@ -145,12 +145,18 @@ function App() {
 		} else {
 			console.warn(".main area not found for cursor cleanup.");
 		}
+		const topArea = document.querySelector(".content .top");
+		if (topArea) {
+			const oldCursorsInTop = topArea.querySelectorAll(".cursor");
+			oldCursorsInTop.forEach((c) => c.remove());
+		}
 
 		renderLines();
 	}, [
 		page,
 		listPage,
 		isLoggedIn,
+		user,
 		terminalMessage,
 		messageStep,
 		contentVersion,
@@ -162,18 +168,44 @@ function App() {
 		if (selected) selected.classList.remove("selected");
 
 		selectedItem.current = 0;
-
 		items.current = document.querySelectorAll(".main li");
-		const content = document.querySelector(".content");
 
-		if (!content) {
-			console.error("Content area not found for renderLines");
+		const topContent = document.querySelector(".content .top");
+		const mainContent = document.querySelector(".content .main");
+
+		if (!mainContent) {
+			console.error("mainContent area not found for renderLines");
 			return;
 		}
+		if (!topContent) {
+			console.error("topContent area not found for renderLines");
+		}
+
+		console.log("Hiding .main area initially.");
+		mainContent.classList.add("invisible");
 
 		lines.current = [];
 		lineTime.current = 0;
-		getLines(content.childNodes);
+
+		if (topContent) {
+			const topDivs = topContent.querySelectorAll(":scope > div");
+			topDivs.forEach((div) => {
+				if (
+					div.childNodes.length >= 1 &&
+					div.firstChild.nodeType === Node.TEXT_NODE &&
+					div.firstChild.textContent.trim()
+				) {
+					console.log("Adding top line node:", div.firstChild);
+					lines.current.push(div.firstChild);
+				} else {
+					console.log("Skipping complex or empty top div:", div);
+				}
+			});
+		} else {
+			console.warn("Cannot add top lines, .top element not found.");
+		}
+
+		getLines(mainContent.childNodes);
 		printLines(lines.current);
 
 		const audio = new Audio(
@@ -182,8 +214,8 @@ function App() {
 		audio.play();
 	}
 
-	function getLines(n) {
-		n.forEach((node) => {
+	function getLines(nodes) {
+		nodes.forEach((node) => {
 			if (node.nodeName == "BR" || node.className == "arrow") {
 				return;
 			}
@@ -239,16 +271,20 @@ function App() {
 	}, [isLoggedIn]);
 
 	function printLines(l) {
-		const realCursor = document.querySelector(".cursor");
+		animateTerminalMessage(terminalMessage);
+
+		const terminalCursor = document.querySelector(".terminal-cursor");
+		if (terminalCursor) {
+			terminalCursor.classList.add("invisible");
+		}
+
 		isPrintingLines.current = true;
 		lineTime.current = 0;
 
-		// Excluding lines
-		if (!firstLoad.current) {
-			l.splice(0, 1);
-		}
-		if (isLoggedIn && !firstLogin.current) {
-			l.splice(0, 3);
+		const mainContent = document.querySelector(".content .main");
+		if (mainContent && mainContent.classList.contains("invisible")) {
+			console.log("Revealing .main area for animation.");
+			mainContent.classList.remove("invisible");
 		}
 
 		const audio = new Audio(charScroll);
@@ -257,43 +293,33 @@ function App() {
 
 		const initialCharDelay = 30;
 
-		l.forEach((line) => {
-			//Cursor
-			const cursor = document.createElement("span");
-			cursor.textContent = "▇";
-			cursor.classList.add("cursor");
-			cursor.style.animationDelay = -lineTime.current + "ms";
-
+		l.forEach((line, index) => {
+			// --- Determine Text and Target ---
 			let lineText = "";
 			let targetElement = line;
 			let isTextNode = false;
 			let isInput = false;
 			let isTextArea = false;
 			let parentForCursor = null;
+			let originalText = "";
 
-			// --- Determine Text and Target ---
 			if (line.nodeType === Node.TEXT_NODE) {
-				lineText = line.textContent;
+				originalText = line.textContent;
+				lineText = originalText;
 				isTextNode = true;
 				parentForCursor = line.parentNode;
 			} else if (line.nodeName === "INPUT") {
-				lineText = line.value;
+				originalText = line.value;
+				lineText = originalText;
 				isInput = true;
+				targetElement = line;
+				parentForCursor = line.parentNode;
 			} else if (line.nodeName === "TEXTAREA") {
-				lineText = line.value;
+				originalText = line.value;
+				lineText = originalText;
 				isTextArea = true;
-			} else if (
-				line.nodeName === "LI" &&
-				line.childNodes.length === 1 &&
-				line.firstChild.nodeType === Node.TEXT_NODE
-			) {
-				targetElement = line.firstChild;
-				lineText = targetElement.textContent;
-				isTextNode = true;
-				parentForCursor = line;
-			} else if (line.nodeName === "LI" && line.childNodes.length > 1) {
-				console.log("Skipping complex LI structure in printLines:", line);
-				return;
+				targetElement = line;
+				parentForCursor = line.parentNode;
 			} else {
 				console.log(
 					"Skipping unhandled node type in printLines:",
@@ -308,54 +334,101 @@ function App() {
 				return;
 			}
 
-			// --- Calculate Timing ---
-			const animationDuration =
-				initialCharDelay + charTime.current * lineText.length;
+			// --- Conditional Animation Logic ---
+			let shouldAnimate = true;
+			if (index === 0 && !firstLoad.current) {
+				shouldAnimate = false;
+				console.log("Skipping animation for line 0 (firstLoad=false)");
+			}
+			if (index === 1 && isLoggedIn && !firstLogin.current) {
+				shouldAnimate = false;
+				console.log(
+					"Skipping animation for line 1 (isLoggedIn=true, firstLogin=false)"
+				);
+			}
 
-			// --- Schedule Animation ---
+			// Calculate timing *only* if animating
+			const animationDuration = shouldAnimate
+				? initialCharDelay + charTime.current * lineText.length
+				: 0;
 			const currentLineStartTime = lineTime.current;
 
-			if (isTextNode) {
-				targetElement.textContent = "";
-				setTimeout(() => {
-					if (parentForCursor && !parentForCursor.querySelector(".cursor")) {
-						parentForCursor.appendChild(cursor);
-					}
-					for (let i = 0; i < lineText.length; i++) {
-						setTimeout(() => {
-							if (targetElement.textContent?.length === i) {
-								targetElement.textContent += lineText[i];
-							} else if (i === 0) {
-								targetElement.textContent = lineText[i];
+			if (shouldAnimate) {
+				// --- Schedule Animation ---
+				const cursor = document.createElement("span");
+				cursor.textContent = "▇";
+				cursor.classList.add("cursor");
+				cursor.style.animationDelay =
+					-(currentLineStartTime + initialCharDelay) + "ms";
+
+				if (isTextNode) {
+					targetElement.textContent = "";
+					setTimeout(() => {
+						// Try to append cursor to the parent
+						if (parentForCursor && !parentForCursor.querySelector(".cursor")) {
+							if (targetElement.nextSibling) {
+								parentForCursor.insertBefore(cursor, targetElement.nextSibling);
+							} else {
+								parentForCursor.appendChild(cursor);
 							}
-						}, initialCharDelay + charTime.current * i);
-					}
-				}, currentLineStartTime);
+						} else if (parentForCursor) {
+							console.warn("Cursor already exists in parent:", parentForCursor);
+						}
 
-				setTimeout(() => {
-					cursor.remove();
-				}, currentLineStartTime + animationDuration);
-			} else if (isInput) {
-				targetElement.value = "";
-				setTimeout(() => {
-					for (let i = 0; i < lineText.length; i++) {
-						setTimeout(() => {
-							targetElement.value += lineText[i];
-						}, initialCharDelay + charTime.current * i);
-					}
-				}, currentLineStartTime);
-			} else if (isTextArea) {
-				targetElement.value = "";
-				targetElement.classList.add("invisible"); // Keep it invisible while empty
+						for (let i = 0; i < lineText.length; i++) {
+							setTimeout(() => {
+								if (document.body.contains(targetElement)) {
+									if (targetElement.textContent?.length === i) {
+										targetElement.textContent += lineText[i];
+									} else if (i === 0) {
+										targetElement.textContent = lineText[i];
+									}
+								}
+							}, initialCharDelay + charTime.current * i);
+						}
+					}, currentLineStartTime);
 
-				setTimeout(() => {
-					targetElement.classList.remove("invisible"); // Make visible just before typing starts
-					for (let i = 0; i < lineText.length; i++) {
-						setTimeout(() => {
-							targetElement.value += lineText[i];
-						}, initialCharDelay + charTime.current * i);
+					setTimeout(() => {
+						cursor.remove();
+					}, currentLineStartTime + animationDuration);
+				} else if (isInput) {
+					targetElement.value = "";
+					setTimeout(() => {
+						for (let i = 0; i < lineText.length; i++) {
+							setTimeout(() => {
+								if (document.body.contains(targetElement)) {
+									targetElement.value += lineText[i];
+								}
+							}, initialCharDelay + charTime.current * i);
+						}
+					}, currentLineStartTime);
+				} else if (isTextArea) {
+					targetElement.value = "";
+					targetElement.classList.add("invisible");
+
+					setTimeout(() => {
+						if (document.body.contains(targetElement)) {
+							targetElement.classList.remove("invisible"); // Make visible just before typing starts
+							for (let i = 0; i < lineText.length; i++) {
+								setTimeout(() => {
+									if (document.body.contains(targetElement)) {
+										targetElement.value += lineText[i];
+									}
+								}, initialCharDelay + charTime.current * i);
+							}
+						}
+					}, currentLineStartTime);
+				}
+			} else {
+				// --- Not animating: Ensure final text is present immediately ---
+				if (isTextNode) {
+					targetElement.textContent = originalText;
+				} else if (isInput || isTextArea) {
+					targetElement.value = originalText;
+					if (isTextArea && targetElement.classList.contains("invisible")) {
+						targetElement.classList.remove("invisible");
 					}
-				}, currentLineStartTime);
+				}
 			}
 
 			// --- Update Total Time ---
@@ -371,22 +444,24 @@ function App() {
 
 			if (
 				items.current &&
+				items.current.length > 0 &&
 				selectedItem.current < items.current.length &&
 				items.current[selectedItem.current]
 			) {
 				items.current[selectedItem.current].classList.add("selected");
 				setTimeout(() => {
-					if (items.current[selectedItem.current]?.children.length > 0) {
-						items.current[selectedItem.current].children[0].focus({
-							preventScroll: true,
-						});
+					const focusTarget = items.current[
+						selectedItem.current
+					]?.querySelector("input, button, textarea, a");
+					if (focusTarget) {
+						focusTarget.focus({ preventScroll: true });
 					}
-				}, 0);
+				}, 50);
 			} else {
 				console.log(
-					"Could not select item:",
+					"Could not select/focus item:",
 					selectedItem.current,
-					items.current
+					items.current?.length
 				);
 			}
 
@@ -397,11 +472,22 @@ function App() {
 				.play()
 				.catch((e) => console.error("Error playing charSingle:", e));
 
-			isPrintingLines.current = false;
-			console.log("Printing finished. Total time:", finalAnimationTime);
-		}, finalAnimationTime);
+			if (terminalCursor) {
+				terminalCursor.classList.remove("invisible");
+			}
 
-		firstLoad.current = false;
+			isPrintingLines.current = false;
+			if (isLoggedIn && firstLogin.current) {
+				console.log("Setting firstLogin.current to false");
+				firstLogin.current = false;
+			}
+			console.log("Printing finished. Total time:", finalAnimationTime);
+		}, finalAnimationTime + 50);
+
+		if (firstLoad.current) {
+			console.log("Setting firstLoad.current to false");
+			firstLoad.current = false;
+		}
 	}
 
 	// Audio Loop
@@ -592,6 +678,46 @@ function App() {
 		}
 	}
 
+	function animateTerminalMessage(message) {
+		const targetElement = document.getElementById("terminal-message-text");
+		const terminalCursor = document.querySelector(".terminal-cursor"); // The cursor next to the message
+
+		if (!targetElement) {
+			console.error(
+				"Terminal message target element (#terminal-message-text) not found."
+			);
+			return;
+		}
+		if (!terminalCursor) {
+			console.warn(
+				"Terminal cursor (.terminal-cursor) not found for message animation."
+			);
+		}
+
+		if (!message || message.trim() === "") {
+			targetElement.textContent = "";
+			if (terminalCursor) terminalCursor.classList.remove("invisible");
+			return;
+		}
+
+		targetElement.textContent = "";
+		if (terminalCursor) terminalCursor.classList.remove("invisible");
+
+		let messageAnimationTime = 0;
+		const charDelay = charTime.current;
+
+		for (let i = 0; i < message.length; i++) {
+			setTimeout(() => {
+				if (targetElement.textContent?.length === i) {
+					targetElement.textContent += message[i];
+				} else if (i === 0) {
+					targetElement.textContent = message[i];
+				}
+			}, charDelay * i);
+			messageAnimationTime = charDelay * (i + 1);
+		}
+	}
+
 	return (
 		<>
 			<div className="scanlines">
@@ -712,7 +838,8 @@ function App() {
 					</div>
 					<div className="end">
 						<br />
-						<span className="arrow">></span> {terminalMessage}{" "}
+						<span className="arrow">></span>{" "}
+						<span id="terminal-message-text">{terminalMessage}</span>{" "}
 						<span className="cursor terminal-cursor">▇</span>
 					</div>
 				</div>

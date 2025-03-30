@@ -45,6 +45,7 @@ li {
 .selected {
 	background-color: var(--terminal-green);
 	color: black;
+	outline: none;
 }
 
 li:has(> textarea) {
