@@ -530,14 +530,21 @@ function App() {
 			const currentLineStartTime = cumulativeTime;
 
 			if (shouldAnimate) {
-				const cursor = document.createElement("span");
-				cursor.textContent = "▇";
-				cursor.classList.add("cursor");
-				cursor.style.animationDelay =
-					-(currentLineStartTime + initialCharDelay) + "ms";
+				let cursor = null;
+				if (isTextNode || isDivElement) {
+					cursor = document.createElement("span");
+					cursor.textContent = "▇";
+					cursor.classList.add("cursor");
+					cursor.style.animationDelay =
+						-(currentLineStartTime + initialCharDelay) + "ms";
+				}
 
 				setTimeout(() => {
-					if (parentForCursor && !parentForCursor.querySelector(".cursor")) {
+					if (
+						cursor &&
+						parentForCursor &&
+						!parentForCursor.querySelector(".cursor")
+					) {
 						if (
 							targetElement.nodeType === Node.TEXT_NODE &&
 							targetElement.nextSibling
@@ -550,15 +557,6 @@ function App() {
 							parentForCursor.appendChild(cursor);
 						} else {
 							parentForCursor.appendChild(cursor);
-						}
-					} else if (isInput || isTextArea) {
-						if (targetElement.parentNode && targetElement.nextSibling) {
-							targetElement.parentNode.insertBefore(
-								cursor,
-								targetElement.nextSibling
-							);
-						} else if (targetElement.parentNode) {
-							targetElement.parentNode.appendChild(cursor);
 						}
 					}
 
@@ -583,9 +581,11 @@ function App() {
 					}
 				}, currentLineStartTime);
 
-				setTimeout(() => {
-					cursor.remove();
-				}, currentLineStartTime + currentLineDuration);
+				if (cursor) {
+					setTimeout(() => {
+						cursor.remove();
+					}, currentLineStartTime + currentLineDuration);
+				}
 			} else {
 				if (isTextNode || isDivElement) {
 					if (targetElement.textContent !== originalText)
@@ -601,8 +601,8 @@ function App() {
 			cumulativeTime += currentLineDuration;
 		});
 
+		lineTime.current = cumulativeTime;
 		const totalDuration = cumulativeTime;
-		lineTime.current = totalDuration;
 
 		setTimeout(() => {
 			audio.pause();
