@@ -206,6 +206,9 @@ function Message(props) {
 						[Previous Page]
 					</li>
 				)}
+				<li id={messageType.current} onClick={props.goToPage}>
+					[Go back]
+				</li>
 			</ul>
 		</>
 	);

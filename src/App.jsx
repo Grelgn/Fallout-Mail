@@ -33,6 +33,7 @@ function App() {
 	const [terminalMessage, setTerminalMessage] = useState("");
 	const [messageStep, setMessageStep] = useState("details");
 	const [contentVersion, setContentVersion] = useState(0);
+	const didInitialMessageAnimation = useRef(false);
 
 	const pageSetter = useCallback(
 		(val) => {
@@ -81,6 +82,7 @@ function App() {
 
 	const handleMessageReady = useCallback(
 		(contentData) => {
+			didInitialMessageAnimation.current = false;
 			setMessagePageContent(contentData);
 			setIsMessageReady(true);
 		},
@@ -127,7 +129,6 @@ function App() {
 		const terminalCursor = document.querySelector(".terminal-cursor");
 		if (terminalCursor && !terminalCursor.classList.contains("invisible")) {
 			terminalCursor.classList.add("invisible");
-			console.log("[goToPage] Hiding terminal cursor immediately.");
 		}
 
 		setTerminalMessage("");
@@ -136,14 +137,18 @@ function App() {
 			setMessageStep("details");
 			return;
 		}
-		if (page === "Message" || e.target.id === "Message") {
+
+		if (page === "Message") {
+			didInitialMessageAnimation.current = false;
 			setIsMessageReady(false);
-			if (page === "Message" && messagePageContent) {
+			if (messagePageContent) {
 				setMessagePageContent(null);
 			}
+		} else if (e.target.id === "Message") {
+			setIsMessageReady(false);
 		}
-		if (e.target.id == "NavPage") setListPage(0);
 
+		if (e.target.id == "NavPage") setListPage(0);
 		setPage(e.target.id);
 
 		if (firstEnter.current) {
@@ -158,12 +163,18 @@ function App() {
 			if (mainArea) {
 				mainArea.querySelectorAll(".cursor").forEach((c) => c.remove());
 			}
+			if (didInitialMessageAnimation.current) {
+				didInitialMessageAnimation.current = false;
+			}
 			return;
 		}
 
 		if (page !== "Message") {
 			if (isMessageReady) setIsMessageReady(false);
 			if (messagePageContent) setMessagePageContent(null);
+			if (didInitialMessageAnimation.current) {
+				didInitialMessageAnimation.current = false;
+			}
 		}
 
 		const mainArea = document.querySelector(".content .main");
@@ -249,9 +260,18 @@ function App() {
 				lines.current.push(bodyDiv);
 			}
 
-			const paginationList = mainContent.querySelector("ul");
+			const paginationList = mainContent.querySelector(
+				"ul:not(#app-message-actions)"
+			);
 			if (paginationList) {
 				getLines(paginationList.childNodes);
+			}
+
+			const appActionsList = mainContent.querySelector(
+				"ul#app-message-actions"
+			);
+			if (appActionsList) {
+				getLines(appActionsList.childNodes);
 			}
 		} else {
 			if (topContent) {
@@ -289,31 +309,11 @@ function App() {
 
 	function getLines(nodes) {
 		nodes.forEach((node) => {
-			if (node.nodeName === "BR" || node.className === "arrow") {
-				return;
-			}
-
-			if (node.nodeName === "LI") {
-				let textNode = null;
-				if (
-					(node.childNodes.length === 1 &&
-						node.firstChild.nodeType === Node.TEXT_NODE &&
-						node.firstChild.textContent.trim()) ||
-					node.classList.contains("pagination-item") ||
-					node.classList.contains("go-back")
-				) {
-					for (const child of node.childNodes) {
-						if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
-							textNode = child;
-							break;
-						}
-					}
-				}
-				if (textNode) {
-					lines.current.push(textNode);
-				} else {
-					getLines(node.childNodes);
-				}
+			if (
+				node.nodeName === "BR" ||
+				node.className === "arrow" ||
+				(node.nodeType === Node.TEXT_NODE && !node.textContent.trim())
+			) {
 				return;
 			}
 
@@ -322,27 +322,71 @@ function App() {
 				return;
 			}
 
-			if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+			if (node.nodeName === "LI") {
+				let simpleTextChild = null;
 				if (
-					!node.parentNode.id?.startsWith("message-") &&
-					!node.parentNode.classList?.contains("message-display")
+					node.childNodes.length === 1 &&
+					node.firstChild.nodeType === Node.TEXT_NODE &&
+					node.firstChild.textContent.trim()
 				) {
-					lines.current.push(node);
+					simpleTextChild = node.firstChild;
+				} else {
+					for (const child of node.childNodes) {
+						if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+							let otherSignificantContent = false;
+							for (const sibling of node.childNodes) {
+								if (
+									sibling !== child &&
+									sibling.nodeName !== "BR" &&
+									(sibling.nodeType === Node.ELEMENT_NODE ||
+										(sibling.nodeType === Node.TEXT_NODE &&
+											sibling.textContent.trim()))
+								) {
+									otherSignificantContent = true;
+									break;
+								}
+							}
+							if (!otherSignificantContent) {
+								simpleTextChild = child;
+								break;
+							}
+						}
+					}
+				}
+
+				if (simpleTextChild) {
+					lines.current.push(simpleTextChild);
+				} else if (node.childNodes.length > 0) {
+					getLines(node.childNodes);
 				}
 				return;
 			}
 
 			if (
-				node.nodeType === Node.ELEMENT_NODE &&
-				node.childNodes.length > 0 &&
-				!["LI", "INPUT", "TEXTAREA"].includes(node.nodeName) &&
-				!node.id?.startsWith("message-") &&
-				!node.classList?.contains("message-display")
+				node.nodeName === "DIV" &&
+				(node.id?.startsWith("message-") ||
+					node.classList?.contains("message-display"))
 			) {
-				getLines(node.childNodes);
+				return;
+			}
+
+			if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+				lines.current.push(node);
+				return;
+			}
+
+			if (node.nodeType === Node.ELEMENT_NODE && node.childNodes.length > 0) {
+				if (
+					!["INPUT", "TEXTAREA", "LI", "BR"].includes(node.nodeName) &&
+					!node.id?.startsWith("message-") &&
+					!node.classList?.contains("message-display")
+				) {
+					getLines(node.childNodes);
+				}
 			}
 		});
 	}
+
 	useEffect(() => {
 		if (!isLoggedIn) {
 			firstLogin.current = true;
@@ -358,14 +402,33 @@ function App() {
 		isPrintingLines.current = true;
 		const mainContent = document.querySelector(".content .main");
 
+		const isInitialMessageLoad =
+			page === "Message" && !didInitialMessageAnimation.current;
+
 		const animationData = [];
 		l.forEach((line, index) => {
 			let shouldAnimate = true;
+
 			if (index === 0 && !firstLoad.current) {
 				shouldAnimate = false;
 			}
 			if (index === 1 && isLoggedIn && !firstLogin.current) {
 				shouldAnimate = false;
+			}
+
+			let isHeaderElement = false;
+			if (page === "Message") {
+				const targetId = line.id;
+				if (
+					targetId === "message-from" ||
+					targetId === "message-to" ||
+					targetId === "message-date"
+				) {
+					isHeaderElement = true;
+					if (!isInitialMessageLoad) {
+						shouldAnimate = false;
+					}
+				}
 			}
 
 			let lineText = "";
@@ -450,8 +513,6 @@ function App() {
 
 		animationData.forEach((data) => {
 			const {
-				line,
-				index,
 				targetElement,
 				originalText,
 				lineText,
@@ -540,8 +601,8 @@ function App() {
 			cumulativeTime += currentLineDuration;
 		});
 
-		lineTime.current = cumulativeTime;
-		const mainContentAnimDuration = cumulativeTime;
+		const totalDuration = cumulativeTime;
+		lineTime.current = totalDuration;
 
 		setTimeout(() => {
 			audio.pause();
@@ -576,10 +637,15 @@ function App() {
 			}
 
 			isPrintingLines.current = false;
+
+			if (isInitialMessageLoad) {
+				didInitialMessageAnimation.current = true;
+			}
+
 			if (isLoggedIn && firstLogin.current) {
 				firstLogin.current = false;
 			}
-		}, mainContentAnimDuration + 100);
+		}, totalDuration + 100);
 
 		if (firstLoad.current) {
 			firstLoad.current = false;
@@ -649,7 +715,10 @@ function App() {
 					e.preventDefault();
 					return;
 				}
-				items.current[selectedItem.current].click();
+				// Ensure item exists before trying to click
+				if (items.current && items.current[selectedItem.current]) {
+					items.current[selectedItem.current].click();
+				}
 			}
 			if (e.key === "Tab") {
 				e.preventDefault();
@@ -781,13 +850,6 @@ function App() {
 			const terminalCursor = document.querySelector(".terminal-cursor");
 			if (terminalCursor && !isPrintingLines.current) {
 				terminalCursor.classList.remove("invisible");
-				console.log(
-					"[useEffect terminalMessage] Cleared message and made cursor visible (printLines not running)."
-				);
-			} else if (terminalCursor && isPrintingLines.current) {
-				console.log(
-					"[useEffect terminalMessage] Cleared message, but printLines is running - cursor visibility deferred."
-				);
 			}
 		}
 	}, [terminalMessage]);
@@ -883,6 +945,7 @@ function App() {
 								liHeight={liHeight}
 								triggerContentUpdate={triggerContentUpdate}
 								onMessageReady={handleMessageReady}
+								goToPage={goToPage}
 							/>
 						)}
 						{page == "UserList" && (
@@ -902,13 +965,7 @@ function App() {
 								</li>
 							</ul>
 						)}
-						{page == "Message" && (
-							<ul>
-								<li id={messageType.current} onClick={goToPage}>
-									[Go back]
-								</li>
-							</ul>
-						)}
+						{page == "Message" && <ul id="app-message-actions"></ul>}
 					</div>
 					<div className="end">
 						<br />
