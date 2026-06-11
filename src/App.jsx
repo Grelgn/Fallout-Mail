@@ -791,6 +791,7 @@ function App() {
 	}, []);
 
 	function powerOn() {
+		if (poweredOn) return;
 		if (document.fullscreenElement == null) {
 			document.documentElement.requestFullscreen().catch(() => {});
 		}
