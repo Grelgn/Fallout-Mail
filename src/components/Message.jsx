@@ -33,6 +33,7 @@ function Message(props) {
 			messageType.current,
 			messageIndex.current
 		);
+		message = { title: "", body: "", timestamp: Date.now() };
 	}
 	const title = htmlDecode(message.title || "");
 	const body = htmlDecode(message.body || "");
@@ -133,10 +134,6 @@ function Message(props) {
 				setPages(newPages);
 				setCurrentPage(0);
 
-				console.log(
-					"[Message.jsx] Calling onMessageReady with data:",
-					messageContentData
-				);
 				onMessageReady(messageContentData);
 			});
 		} catch (error) {
