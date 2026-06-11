@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
+import apiFetch from "../api";
 
 function SendMessage(props) {
-	const API_URL = import.meta.env.VITE_API_URL;
 	const textareaRef = useRef(null);
 	const resizeObserverRef = useRef(null);
 	const [maxLines, setMaxLines] = useState(null);
@@ -215,33 +215,14 @@ function SendMessage(props) {
 
 	async function handleSendMessage(e) {
 		e.preventDefault();
-		const sender = props.user.id;
 		const { receiver, title, body } = formData;
-
-		const response = await fetch(API_URL + "/message", {
+		const json = await apiFetch("/message", {
 			method: "POST",
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				sender: sender,
-				receiver: receiver,
-				title: title,
-				body: body,
-			}),
+			body: JSON.stringify({ receiver, title, body }),
 		});
-		const json = await response.json();
-
 		if (json.success) {
 			props.pageSetter("NavPage");
 			props.terminalMessageSetter(json.message + ".");
-			props.userList.forEach((user) => {
-				if (user.id === json.data.receiverId) {
-					json.data.receiver = { username: user.username };
-				}
-			});
-			props.user.messagesSent.push(json.data);
 			new Audio(props.passGood).play();
 		} else {
 			props.terminalMessageSetter(
@@ -249,10 +230,6 @@ function SendMessage(props) {
 			);
 			new Audio(props.passBad).play();
 		}
-	}
-
-	function addPage() {
-		console.log("Add Page");
 	}
 
 	return (
@@ -298,7 +275,6 @@ function SendMessage(props) {
 								spellCheck="false"
 							/>
 						</li>
-						<li onClick={addPage}>[Add page]</li>
 						<li>
 							<button type="submit" onClick={handleSendMessage}>
 								[Send Message]
