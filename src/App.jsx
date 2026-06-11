@@ -8,15 +8,27 @@ import Sent from "./components/Sent";
 import UserList from "./components/UserList";
 import Message from "./components/Message";
 
-const charEnter = Object.keys(
-	import.meta.glob("/src/assets/sounds/CharEnter*.wav")
+const charEnter = Object.values(
+	import.meta.glob("/src/assets/sounds/CharEnter*.wav", {
+		eager: true,
+		query: "?url",
+		import: "default",
+	})
 );
-const charSingle = Object.keys(
-	import.meta.glob("/src/assets/sounds/CharSingle*.wav")
+const charSingle = Object.values(
+	import.meta.glob("/src/assets/sounds/CharSingle*.wav", {
+		eager: true,
+		query: "?url",
+		import: "default",
+	})
 );
 import charScroll from "/src/assets/sounds/CharScroll_LP.wav";
-const hardDrive = Object.keys(
-	import.meta.glob("/src/assets/sounds/HardDrive*.wav")
+const hardDrive = Object.values(
+	import.meta.glob("/src/assets/sounds/HardDrive*.wav", {
+		eager: true,
+		query: "?url",
+		import: "default",
+	})
 );
 import fanHum from "/src/assets/sounds/FanHum_LP.wav";
 import passBad from "/src/assets/sounds/PassBad.wav";
