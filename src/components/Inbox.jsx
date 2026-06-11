@@ -7,12 +7,12 @@ function Inbox(props) {
 
 	function nextPage() {
 		props.listPageSetter(props.listPage + 1);
-		document.querySelector(".selected").classList.remove("selected");
+		document.querySelector(".selected")?.classList.remove("selected");
 	}
 
 	function previousPage() {
 		props.listPageSetter(props.listPage - 1);
-		document.querySelector(".selected").classList.remove("selected");
+		document.querySelector(".selected")?.classList.remove("selected");
 	}
 
 	const messages = [];
@@ -25,21 +25,19 @@ function Inbox(props) {
 		);
 	});
 
+	if (messages.length === 0) {
+		return <div>No messages.</div>;
+	}
+
 	const rowAmount = Math.floor(
 		(props.mainHeight - props.liHeight.current * 3) / props.liHeight.current
 	);
-
-	console.log("Total Messages " + messages.length);
 	const pageCount = Math.ceil(messages.length / rowAmount);
-	console.log("Page Count " + pageCount);
 
 	let pages = [];
 	for (let i = 0; i < pageCount; i++) {
 		pages[i] = messages.splice(0, rowAmount);
 	}
-
-	console.log("List Page " + props.listPage);
-	console.log(pages[props.listPage]);
 
 	if (pages[props.listPage]?.length > 0) {
 		return (

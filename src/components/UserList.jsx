@@ -1,12 +1,12 @@
 function UserList(props) {
 	function nextPage() {
 		props.listPageSetter(props.listPage + 1);
-		document.querySelector(".selected").classList.remove("selected");
+		document.querySelector(".selected")?.classList.remove("selected");
 	}
 
 	function previousPage() {
 		props.listPageSetter(props.listPage - 1);
-		document.querySelector(".selected").classList.remove("selected");
+		document.querySelector(".selected")?.classList.remove("selected");
 	}
 
 	const users = [];
