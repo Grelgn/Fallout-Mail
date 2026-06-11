@@ -2,6 +2,7 @@ import SignUp from "./components/SignUp";
 import LogIn from "./components/LogIn";
 import NavPage from "./components/NavPage";
 import { useCallback, useEffect, useRef, useState } from "react";
+import apiFetch from "./api";
 import SendMessage from "./components/SendMessage";
 import Inbox from "./components/Inbox";
 import Sent from "./components/Sent";
@@ -35,6 +36,7 @@ import passBad from "/src/assets/sounds/PassBad.wav";
 import passGood from "/src/assets/sounds/PassGood.wav";
 
 function App() {
+	const [poweredOn, setPoweredOn] = useState(false);
 	const [isMessageReady, setIsMessageReady] = useState(false);
 	const [messagePageContent, setMessagePageContent] = useState(null);
 	const [page, setPage] = useState("NavPage");
@@ -114,7 +116,6 @@ function App() {
 		[setMessagePageContent]
 	);
 
-	let firstEnter = useRef(true);
 	let items = useRef();
 	let selectedItem = useRef(0);
 	let lines = useRef([]);
@@ -137,7 +138,9 @@ function App() {
 		[setMainHeight]
 	);
 
-	function goToPage(e) {
+	async function goToPage(e) {
+		const targetPage = e.target.id;
+
 		const terminalCursor = document.querySelector(".terminal-cursor");
 		if (terminalCursor && !terminalCursor.classList.contains("invisible")) {
 			terminalCursor.classList.add("invisible");
@@ -156,20 +159,30 @@ function App() {
 			if (messagePageContent) {
 				setMessagePageContent(null);
 			}
-		} else if (e.target.id === "Message") {
+		} else if (targetPage === "Message") {
 			setIsMessageReady(false);
 		}
 
-		if (e.target.id == "NavPage") setListPage(0);
-		setPage(e.target.id);
-
-		if (firstEnter.current) {
-			forceFullscreen();
-			firstEnter.current = false;
+		if ((targetPage === "Inbox" || targetPage === "Sent") && isLoggedIn) {
+			const json = await apiFetch("/messages");
+			if (json.success) {
+				setUser((prev) => ({
+					...prev,
+					messagesReceived: json.messagesReceived,
+					messagesSent: json.messagesSent,
+				}));
+			} else {
+				setTerminalMessage(json.message + ".");
+				return;
+			}
 		}
+
+		if (targetPage == "NavPage") setListPage(0);
+		setPage(targetPage);
 	}
 
 	useEffect(() => {
+		if (!poweredOn) return;
 		if (page === "Message" && (!isMessageReady || !messagePageContent)) {
 			const mainArea = document.querySelector(".content .main");
 			if (mainArea) {
@@ -209,6 +222,7 @@ function App() {
 		contentVersion,
 		isMessageReady,
 		messagePageContent,
+		poweredOn,
 	]);
 
 	function renderLines(messageData = null) {
@@ -689,6 +703,7 @@ function App() {
 			if (
 				e.key === "ArrowUp" &&
 				!isPrintingLines.current &&
+				items.current &&
 				selectedItem.current > 0
 			) {
 				e.preventDefault();
@@ -707,6 +722,7 @@ function App() {
 			if (
 				e.key === "ArrowDown" &&
 				!isPrintingLines.current &&
+				items.current &&
 				selectedItem.current < items.current.length - 1
 			) {
 				e.preventDefault();
@@ -772,9 +788,27 @@ function App() {
 		}
 		window.addEventListener("pointerdown", resumeAudio);
 		window.addEventListener("keydown", resumeAudio);
-
-		loopAudio(fanHum);
 	}, []);
+
+	function powerOn() {
+		if (document.fullscreenElement == null) {
+			document.documentElement.requestFullscreen().catch(() => {});
+		}
+		if (!audioContextRef.current) {
+			audioContextRef.current = new AudioContext();
+		}
+		loopAudio(fanHum);
+		setPoweredOn(true);
+	}
+
+	useEffect(() => {
+		if (poweredOn) return;
+		function keyPowerOn() {
+			powerOn();
+		}
+		window.addEventListener("keydown", keyPowerOn);
+		return () => window.removeEventListener("keydown", keyPowerOn);
+	}, [poweredOn]);
 
 	function htmlDecode(input) {
 		var doc = new DOMParser().parseFromString(input, "text/html");
@@ -831,19 +865,6 @@ function App() {
 		}
 	}
 
-	function forceFullscreen() {
-		if (
-			document.fullscreenElement == null &&
-			window.innerHeight != screen.height
-		) {
-			document.documentElement.requestFullscreen().catch((err) => {
-				console.error(
-					`Error attempting to enable full-screen mode: ${err.message} (${err.name})`
-				);
-			});
-		}
-	}
-
 	function animateTerminalMessage(message) {
 		const targetElement = document.getElementById("terminal-message-text");
 		if (!targetElement) {
@@ -879,6 +900,16 @@ function App() {
 			}
 		}
 	}, [terminalMessage]);
+
+	if (!poweredOn) {
+		return (
+			<div className="scanlines">
+				<div className="power-on" onClick={powerOn}>
+					<span className="power-on-text">CLICK TO POWER ON</span>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<>

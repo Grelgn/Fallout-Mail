@@ -227,3 +227,15 @@ ul {
 		font-size: 8px;
 	}
 }
+
+.power-on {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100svh;
+	cursor: pointer;
+}
+
+.power-on-text {
+	animation: blink 1s steps(1) infinite;
+}

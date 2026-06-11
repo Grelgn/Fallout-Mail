@@ -1,5 +1,8 @@
+import apiFetch from "../api";
+
 function NavPage(props) {
 	function logOut() {
+		apiFetch("/log-out", { method: "POST" });
 		props.terminalMessageSetter("Logged out.");
 		props.isLoggedInSetter(false);
 	}
