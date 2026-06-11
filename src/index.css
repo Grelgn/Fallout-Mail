@@ -152,6 +152,8 @@ ul {
 
 .cursor {
 	animation: blink 0.4s steps(1) infinite;
+	/* Keep the block glyph from inflating the line box while a line prints */
+	line-height: 0;
 }
 
 .message-display {
