@@ -1,27 +1,19 @@
-function LogIn(props) {
-	const API_URL = import.meta.env.VITE_API_URL;
+import apiFetch from "../api";
 
+function LogIn(props) {
 	async function handleLogIn(e) {
 		e.preventDefault();
 		const username = document.querySelector("#username");
 		const password = document.querySelector("#password");
-		const response = await fetch(API_URL + "/log-in", {
+		const json = await apiFetch("/log-in", {
 			method: "POST",
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
 			body: JSON.stringify({
 				username: username.value,
 				password: password.value,
 			}),
 		});
-		const json = await response.json();
-		console.log(json);
 		if (json.success) {
-			console.log("Logged In");
 			props.isLoggedInSetter(true);
-			console.log(json.user);
 			props.userSetter(json.user);
 			props.userListSetter(json.userList);
 			props.terminalMessageSetter(json.message + ".");
@@ -31,7 +23,7 @@ function LogIn(props) {
 			props.terminalMessageSetter(json.message + ".");
 			username.value = "";
 			password.value = "";
-			document.querySelector(".selected").classList.remove("selected");
+			document.querySelector(".selected")?.classList.remove("selected");
 			const audio = new Audio(props.passBad);
 			audio.play();
 		}
