@@ -31,7 +31,7 @@ function UserList(props) {
 		pages[i] = users.splice(0, rowAmount);
 	}
 
-	if (pages[props.listPage].length > 0) {
+	if (pages[props.listPage]?.length > 0) {
 		return (
 			<ul>
 				{pages[props.listPage]}

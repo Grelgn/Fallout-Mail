@@ -41,7 +41,7 @@ function Inbox(props) {
 	console.log("List Page " + props.listPage);
 	console.log(pages[props.listPage]);
 
-	if (pages[props.listPage].length > 0) {
+	if (pages[props.listPage]?.length > 0) {
 		return (
 			<ul>
 				{pages[props.listPage]}
