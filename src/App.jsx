@@ -664,8 +664,12 @@ function App() {
 		}
 	}
 
-	const audioContext = new AudioContext();
+	const audioContextRef = useRef(null);
 	async function loopAudio(audioUrl) {
+		if (!audioContextRef.current) {
+			audioContextRef.current = new AudioContext();
+		}
+		const audioContext = audioContextRef.current;
 		const response = await fetch(audioUrl);
 		const arrayBuffer = await response.arrayBuffer();
 		const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -758,6 +762,16 @@ function App() {
 				audio.play();
 			}
 		});
+
+		// The browser suspends audio until the user interacts with the page
+		function resumeAudio() {
+			const ctx = audioContextRef.current;
+			if (ctx && ctx.state === "suspended") {
+				ctx.resume();
+			}
+		}
+		window.addEventListener("pointerdown", resumeAudio);
+		window.addEventListener("keydown", resumeAudio);
 
 		loopAudio(fanHum);
 	}, []);
